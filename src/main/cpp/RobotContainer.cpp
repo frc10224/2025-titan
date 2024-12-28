@@ -1,8 +1,16 @@
 #include "RobotContainer.h"
 #include <frc2/command/Commands.h>
 
+Drivetrain *g_drivetrain;
+Pose *g_pose;
+Shooter *g_shooter;
+
 RobotContainer::RobotContainer() {
-    driver.RightTrigger().OnTrue(shooter.SpinMotors([] { return 1.0; }));
+    g_drivetrain = &drivetrain;
+    g_pose = &pose;
+    g_shooter = &shooter;
+    driver.RightTrigger()
+        .OnTrue(shooter.SpinMotors([] { return 1.0; }));
     // set up controller binds here
 }
 

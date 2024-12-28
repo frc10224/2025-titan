@@ -1,0 +1,35 @@
+#pragma once
+
+#include <frc/drive/MecanumDrive.h>
+#include <frc/estimator/MecanumDrivePoseEstimator.h>
+#include <frc/kinematics/MecanumDriveWheelPositions.h>
+#include <frc/drive/MecanumDrive.h>
+#include <frc/smartdashboard/Field2d.h>
+#include <frc2/command/SubsystemBase.h>
+
+#include <studica/AHRS.h>
+
+#include "LimelightHelpers.h"
+#include "Drivetrain.h"
+
+extern Drivetrain *g_drivetrain;
+
+class Pose : frc2::SubsystemBase {
+private:
+    studica::AHRS navx{studica::AHRS::NavXComType::kMXP_SPI};
+    frc::Pose2d pose;
+    frc::Field2d field;
+    frc::MecanumDriveKinematics kinematics{
+        DrivetrainConstants::kFrontLeftLocation, DrivetrainConstants::kFrontRightLocation,
+        DrivetrainConstants::kBackLeftLocation, DrivetrainConstants::kBackRightLocation,
+    };
+    frc::MecanumDrivePoseEstimator estimator{kinematics,
+        GyroAngle(), frc::MecanumDriveWheelPositions{}, pose};
+public:
+    Pose();
+    void Periodic() override;
+    void UpdateFromWheelPositions(frc::MecanumDriveWheelPositions wheelPos);
+    frc::Rotation2d GyroAngle() {
+        return frc::Rotation2d((units::degree_t)navx.GetYaw());
+    }
+};

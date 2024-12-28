@@ -1,5 +1,8 @@
+#pragma once
+
 #include <frc2/command/SubsystemBase.h>
 #include <frc/drive/MecanumDrive.h>
+#include <frc/kinematics/MecanumDriveWheelPositions.h>
 #include <rev/SparkMax.h>
 
 #include "Bits.h"
@@ -7,19 +10,19 @@
 
 class Drivetrain : public frc2::SubsystemBase {
 private:
-    rev::spark::SparkMax motorLf{MOTORID_FL, rev::spark::SparkMax::MotorType::kBrushless};
-    rev::spark::SparkMax motorLb{MOTORID_RL, rev::spark::SparkMax::MotorType::kBrushless};
-    rev::spark::SparkMax motorRf{MOTORID_FR, rev::spark::SparkMax::MotorType::kBrushless};
-    rev::spark::SparkMax motorRb{MOTORID_RR, rev::spark::SparkMax::MotorType::kBrushless};
-
+    rev::spark::SparkMax motorLf{DrivetrainConstants::kMotorId_LF, rev::spark::SparkMax::MotorType::kBrushless};
+    rev::spark::SparkMax motorLb{DrivetrainConstants::kMotorId_LB, rev::spark::SparkMax::MotorType::kBrushless};
+    rev::spark::SparkMax motorRf{DrivetrainConstants::kMotorId_RF, rev::spark::SparkMax::MotorType::kBrushless};
+    rev::spark::SparkMax motorRb{DrivetrainConstants::kMotorId_RB, rev::spark::SparkMax::MotorType::kBrushless};
 public:
-    frc::MecanumDrive m_robotDrive{
+    frc::MecanumDrive drive{
         [&](double output) { motorLf.Set(output); },
         [&](double output) { motorLb.Set(output); },
         [&](double output) { motorRf.Set(output); },
         [&](double output) { motorRb.Set(output); }};
 public:
     Drivetrain();
-    frc2::CommandPtr MecanumDrive(Fn<double> xSpeed, Fn<double> ySpeed, Fn<double> zRotate);
     void Periodic() override;
+    frc2::CommandPtr MecanumDrive(Fn<double> xSpeed, Fn<double> ySpeed, Fn<double> zRotate);
+    frc::MecanumDriveWheelPositions GetWheelPositions();
 };
