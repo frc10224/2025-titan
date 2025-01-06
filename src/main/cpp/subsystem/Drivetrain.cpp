@@ -53,13 +53,11 @@ frc2::CommandPtr Drivetrain::MecanumDrive(Fn<double> XSpeed, Fn<double> YSpeed, 
 
 frc::MecanumDriveWheelPositions Drivetrain::GetWheelPositions() {
 	units::meter_t wheelPos[4] = {
-		units::meter_t{motorLf.GetEncoder().GetPosition()},
-		units::meter_t{motorRf.GetEncoder().GetPosition()},
-		units::meter_t{motorLb.GetEncoder().GetPosition()},
-		units::meter_t{motorRb.GetEncoder().GetPosition()},
+		DrivetrainConstants::kWheelRadius * M_PI * motorLf.GetEncoder().GetPosition(),
+		DrivetrainConstants::kWheelRadius * M_PI * motorRf.GetEncoder().GetPosition(),
+		DrivetrainConstants::kWheelRadius * M_PI * motorLb.GetEncoder().GetPosition(),
+		DrivetrainConstants::kWheelRadius * M_PI * motorRb.GetEncoder().GetPosition(),
 	};
-	for (int i = 0; i < 4; i++)
-		wheelPos[i] *= DrivetrainConstants::kWheelRadius * M_PI;
 	// ...please don't break
 	return *(frc::MecanumDriveWheelPositions *)&wheelPos;
 }

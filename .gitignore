@@ -137,6 +137,7 @@ $RECYCLE.BIN/
 
 ### Gradle ###
 .gradle
+.cache/
 /build/
 
 # Ignore Gradle GUI config
@@ -181,8 +182,11 @@ simgui-ds.json
 ctre_sim/
 
 # clangd
-.cache
+/.cache
 compile_commands.json
+
+# Eclipse generated file for annotation processors
+.factorypath
 
 # maven
 /maven/
