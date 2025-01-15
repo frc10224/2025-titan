@@ -2,14 +2,12 @@
 #include <frc2/command/CommandPtr.h>
 
 #include "subsystem/Drivetrain.h"
-#include "subsystem/Shooter.h"
 #include "subsystem/Pose.h"
 
 class RobotContainer {
 private:
     frc2::CommandXboxController driver{0};
     Drivetrain drivetrain;
-    Shooter shooter;
     Pose pose;
 public:
     RobotContainer();

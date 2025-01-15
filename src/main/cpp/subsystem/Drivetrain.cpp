@@ -47,17 +47,17 @@ frc2::CommandPtr Drivetrain::MecanumDrive(Fn<double> XSpeed, Fn<double> YSpeed, 
 		frc::ApplyDeadband(ySpeed, 0.1);
 		frc::ApplyDeadband(zRotate, 0.1);
 
-		drive.DriveCartesian(xSpeed, ySpeed, zRotate, g_pose->GyroAngle());
+		auto [frontLeft, frontRight, rearLeft, rearRight] =
+      		frc::MecanumDrive::DriveCartesianIK(xSpeed, ySpeed, zRotate, g_pose->GyroAngle());
+
 	}, {this});
 }
 
 frc::MecanumDriveWheelPositions Drivetrain::GetWheelPositions() {
-	units::meter_t wheelPos[4] = {
+	return {
 		DrivetrainConstants::kWheelRadius * M_PI * motorLf.GetEncoder().GetPosition(),
 		DrivetrainConstants::kWheelRadius * M_PI * motorRf.GetEncoder().GetPosition(),
 		DrivetrainConstants::kWheelRadius * M_PI * motorLb.GetEncoder().GetPosition(),
 		DrivetrainConstants::kWheelRadius * M_PI * motorRb.GetEncoder().GetPosition(),
 	};
-	// ...please don't break
-	return *(frc::MecanumDriveWheelPositions *)&wheelPos;
 }

@@ -9,8 +9,6 @@ RobotContainer::RobotContainer() {
     g_drivetrain = &drivetrain;
     g_pose = &pose;
     g_shooter = &shooter;
-    driver.RightTrigger()
-        .OnTrue(shooter.SpinMotors([] { return 1.0; }));
     // set up controller binds here
 }
 
@@ -23,4 +21,5 @@ frc2::CommandPtr RobotContainer::CreateTeleopCommand() {
         [this] { return this->driver.GetLeftX(); },
         [this] { return this->driver.GetLeftY(); },
         [this] { return this->driver.GetRightX(); });
+    return frc2::cmd::None();
 }

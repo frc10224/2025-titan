@@ -10,7 +10,9 @@ Pose::Pose() {
 }
 
 void Pose::Periodic() {
-    LimelightHelpers::SetRobotOrientation("", navx.GetYaw(), 0, 0, 0, 0, 0);
+    double yaw = navx.GetYaw();
+    frc::SmartDashboard::PutNumber("Robot yaw", yaw);
+    LimelightHelpers::SetRobotOrientation("", yaw, 0, 0, 0, 0, 0);
     LimelightHelpers::PoseEstimate estimate =
         LimelightHelpers::getBotPoseEstimate_wpiBlue_MegaTag2();
 

@@ -15,12 +15,6 @@ private:
     rev::spark::SparkMax motorRf{DrivetrainConstants::kMotorId_RF, rev::spark::SparkMax::MotorType::kBrushless};
     rev::spark::SparkMax motorRb{DrivetrainConstants::kMotorId_RB, rev::spark::SparkMax::MotorType::kBrushless};
 public:
-    frc::MecanumDrive drive{
-        [&](double output) { motorLf.Set(output); },
-        [&](double output) { motorLb.Set(output); },
-        [&](double output) { motorRf.Set(output); },
-        [&](double output) { motorRb.Set(output); }};
-public:
     Drivetrain();
     void Periodic() override;
     frc2::CommandPtr MecanumDrive(Fn<double> xSpeed, Fn<double> ySpeed, Fn<double> zRotate);
