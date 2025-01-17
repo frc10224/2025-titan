@@ -4,8 +4,19 @@
 #include <units/base.h>
 
 namespace DrivetrainConstants {
+    // TODO: fix these!
     const double kMaxDriveSpeed = 1;
     const double kMaxTurnSpeed = 1;
+    const double kGearRatio = 5.71;
+    const units::inch_t kWheelRadius = 2_in;
+    const double kMaxRPM = 5000;
+    const double kP = 0.001;
+    const double kI = 0;
+    const double kD = 0.001;
+    // https://docs.revrobotics.com/brushless/neo/v1.1#motor-specifications
+    // This value should be 1/Kv
+    const double kVelocityFF = 1/473;
+    // CAN bus IDs
     const int kMotorId_LB = 3;
     const int kMotorId_LF = 4;
     const int kMotorId_RF = 1;
@@ -14,10 +25,4 @@ namespace DrivetrainConstants {
     const frc::Translation2d kFrontRightLocation{0.381_m, -0.381_m};
     const frc::Translation2d kBackLeftLocation{-0.381_m, 0.381_m};
     const frc::Translation2d kBackRightLocation{-0.381_m, -0.381_m};
-    const units::meter_t kWheelRadius = 0.20_m;
-};
-
-namespace ShooterConstants {
-    const int kMotorId_left = 5;
-    const int kMotorId_right = 6;
 };

@@ -8,12 +8,32 @@
 #include "Bits.h"
 #include "Constants.h"
 
+class Motor {
+public:
+    rev::spark::SparkMax motor;
+    rev::spark::SparkClosedLoopController &pid;
+    Motor(int id);
+    
+    inline units::meter_t GetWheelDistance() {
+        // the SparkMax encoder returns motor revolutions, multiply to get to
+        // the distance covered by the wheel
+        return DrivetrainConstants::kWheelRadius *
+               DrivetrainConstants::kGearRatio *
+               motor.GetEncoder().GetPosition();
+    }
+
+    inline void SetVelocity(double percent) {
+        pid.SetReference(percent * DrivetrainConstants::kMaxRPM,
+            rev::spark::SparkLowLevel::ControlType::kVelocity);
+    }
+};
+
 class Drivetrain : public frc2::SubsystemBase {
 private:
-    rev::spark::SparkMax motorLf{DrivetrainConstants::kMotorId_LF, rev::spark::SparkMax::MotorType::kBrushless};
-    rev::spark::SparkMax motorLb{DrivetrainConstants::kMotorId_LB, rev::spark::SparkMax::MotorType::kBrushless};
-    rev::spark::SparkMax motorRf{DrivetrainConstants::kMotorId_RF, rev::spark::SparkMax::MotorType::kBrushless};
-    rev::spark::SparkMax motorRb{DrivetrainConstants::kMotorId_RB, rev::spark::SparkMax::MotorType::kBrushless};
+    Motor motorLf{DrivetrainConstants::kMotorId_LF};
+    Motor motorLb{DrivetrainConstants::kMotorId_LB};
+    Motor motorRf{DrivetrainConstants::kMotorId_RF};
+    Motor motorRb{DrivetrainConstants::kMotorId_RB};
 public:
     Drivetrain();
     void Periodic() override;

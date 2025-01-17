@@ -16,18 +16,27 @@ using namespace rev::spark;
 
 extern Pose *g_pose;
 
-Drivetrain::Drivetrain() {
-	const auto pm = SparkMax::PersistMode::kPersistParameters;
-	const auto rm = SparkMax::ResetMode::kResetSafeParameters;
-
+Motor::Motor(int id) :
+		motor(id, rev::spark::SparkMax::MotorType::kBrushless),
+		pid(motor.GetClosedLoopController()) {
 	rev::spark::SparkBaseConfig config{};
-	config.SetIdleMode(SparkBaseConfig::IdleMode::kBrake);
 
-	motorLb.Configure(config, rm, pm);
-	motorLf.Configure(config, rm, pm);
-	motorRb.Configure(config, rm, pm);
-	motorRf.Configure(config, rm, pm);
+	// we want the robot to stop when the drive releases the stick
+	config.SetIdleMode(SparkBaseConfig::IdleMode::kBrake);
+	
+	config.closedLoop
+		.P(DrivetrainConstants::kP)
+		.I(DrivetrainConstants::kI)
+		.D(DrivetrainConstants::kD)
+		.VelocityFF(DrivetrainConstants::kVelocityFF);
+	
+	motor.Configure(config,
+		SparkMax::ResetMode::kResetSafeParameters,
+		// if the controller power cycles we want it to remember these settings
+		SparkMax::PersistMode::kPersistParameters);
 }
+
+Drivetrain::Drivetrain() {}
 
 void Drivetrain::Periodic() {
 	g_pose->UpdateFromWheelPositions(GetWheelPositions());
@@ -47,17 +56,22 @@ frc2::CommandPtr Drivetrain::MecanumDrive(Fn<double> XSpeed, Fn<double> YSpeed, 
 		frc::ApplyDeadband(ySpeed, 0.1);
 		frc::ApplyDeadband(zRotate, 0.1);
 
-		auto [frontLeft, frontRight, rearLeft, rearRight] =
+		auto [lf, rf, lb, rb] =
       		frc::MecanumDrive::DriveCartesianIK(xSpeed, ySpeed, zRotate, g_pose->GyroAngle());
+		
+		motorLf.SetVelocity(lf);
+		motorRf.SetVelocity(rf);
+		motorLb.SetVelocity(lb);
+		motorRb.SetVelocity(rb);
 
 	}, {this});
 }
 
 frc::MecanumDriveWheelPositions Drivetrain::GetWheelPositions() {
-	return {
-		DrivetrainConstants::kWheelRadius * M_PI * motorLf.GetEncoder().GetPosition(),
-		DrivetrainConstants::kWheelRadius * M_PI * motorRf.GetEncoder().GetPosition(),
-		DrivetrainConstants::kWheelRadius * M_PI * motorLb.GetEncoder().GetPosition(),
-		DrivetrainConstants::kWheelRadius * M_PI * motorRb.GetEncoder().GetPosition(),
+	return { 
+		motorLf.GetWheelDistance(),
+		motorRf.GetWheelDistance(),
+		motorLb.GetWheelDistance(),
+		motorRb.GetWheelDistance(),
 	};
 }

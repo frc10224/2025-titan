@@ -29,7 +29,8 @@ public:
     Pose();
     void Periodic() override;
     void UpdateFromWheelPositions(frc::MecanumDriveWheelPositions wheelPos);
-    frc::Rotation2d GyroAngle() {
+    inline frc::Rotation2d GyroAngle() {
         return frc::Rotation2d((units::degree_t)navx.GetYaw());
     }
+    inline void ResetAngle() { navx.ZeroYaw(); }
 };

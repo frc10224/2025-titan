@@ -3,12 +3,10 @@
 
 Drivetrain *g_drivetrain;
 Pose *g_pose;
-Shooter *g_shooter;
 
 RobotContainer::RobotContainer() {
     g_drivetrain = &drivetrain;
     g_pose = &pose;
-    g_shooter = &shooter;
     // set up controller binds here
 }
 
@@ -21,5 +19,4 @@ frc2::CommandPtr RobotContainer::CreateTeleopCommand() {
         [this] { return this->driver.GetLeftX(); },
         [this] { return this->driver.GetLeftY(); },
         [this] { return this->driver.GetRightX(); });
-    return frc2::cmd::None();
 }
