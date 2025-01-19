@@ -1,6 +1,7 @@
 #pragma once
 
 #include <frc/geometry/Translation2d.h>
+#include <frc/geometry/Transform3d.h>
 #include <units/base.h>
 
 namespace DrivetrainConstants {
@@ -26,3 +27,9 @@ namespace DrivetrainConstants {
     const frc::Translation2d kBackLeftLocation{-0.381_m, 0.381_m};
     const frc::Translation2d kBackRightLocation{-0.381_m, -0.381_m};
 };
+
+namespace PoseConstants {
+    // TODO: fix these!
+    const frc::Transform3d kBackCameraLocation{
+        frc::Translation3d(0_m, 0_m, 0_m), frc::Rotation3d(0_rad, 0_rad, 0_rad)};
+}

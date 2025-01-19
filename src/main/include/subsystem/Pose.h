@@ -1,15 +1,16 @@
 #pragma once
 
+#include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/drive/MecanumDrive.h>
 #include <frc/estimator/MecanumDrivePoseEstimator.h>
 #include <frc/kinematics/MecanumDriveWheelPositions.h>
-#include <frc/drive/MecanumDrive.h>
 #include <frc/smartdashboard/Field2d.h>
 #include <frc2/command/SubsystemBase.h>
 
+#include <photon/PhotonCamera.h>
+#include <photon/PhotonPoseEstimator.h>
 #include <studica/AHRS.h>
 
-#include "LimelightHelpers.h"
 #include "Drivetrain.h"
 
 extern Drivetrain *g_drivetrain;
@@ -17,13 +18,22 @@ extern Drivetrain *g_drivetrain;
 class Pose : frc2::SubsystemBase {
 private:
     studica::AHRS navx{studica::AHRS::NavXComType::kMXP_SPI};
-    frc::Pose2d pose;
-    frc::Field2d field;
-    frc::MecanumDriveKinematics kinematics{
-        DrivetrainConstants::kFrontLeftLocation, DrivetrainConstants::kFrontRightLocation,
-        DrivetrainConstants::kBackLeftLocation, DrivetrainConstants::kBackRightLocation,
+
+    frc::AprilTagFieldLayout aprilTagLayout;
+    photon::PhotonCamera backCamera{"backCamera"};
+    photon::PhotonPoseEstimator backVisionEstimator{
+        aprilTagLayout,
+        photon::MULTI_TAG_PNP_ON_COPROCESSOR,
+        PoseConstants::kBackCameraLocation,
     };
-    frc::MecanumDrivePoseEstimator estimator{kinematics,
+    frc::Pose2d pose;
+    frc::MecanumDriveKinematics kinematics{
+        DrivetrainConstants::kFrontLeftLocation,
+        DrivetrainConstants::kFrontRightLocation,
+        DrivetrainConstants::kBackLeftLocation,
+        DrivetrainConstants::kBackRightLocation,
+    };
+    frc::MecanumDrivePoseEstimator driveEstimator{kinematics,
         GyroAngle(), frc::MecanumDriveWheelPositions{}, pose};
 public:
     Pose();
