@@ -17,9 +17,9 @@ using namespace rev::spark;
 extern Pose *g_pose;
 
 Motor::Motor(int id) :
-		motor(id, rev::spark::SparkMax::MotorType::kBrushless),
+		motor(id, SparkMax::MotorType::kBrushless),
 		pid(motor.GetClosedLoopController()) {
-	rev::spark::SparkBaseConfig config{};
+	SparkBaseConfig config{};
 
 	// we want the robot to stop when the drive releases the stick
 	config.SetIdleMode(SparkBaseConfig::IdleMode::kBrake);
