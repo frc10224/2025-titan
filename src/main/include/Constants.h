@@ -33,3 +33,12 @@ namespace PoseConstants {
     const frc::Transform3d kBackCameraLocation{
         frc::Translation3d(0_m, 0_m, 0_m), frc::Rotation3d(0_rad, 0_rad, 0_rad)};
 }
+
+namespace ElevatorConstants {
+    // TODO: get real ids
+    const int kLeftMotorId = 5;
+    const int kRightMotorId = 6;
+    const double kP = 1;
+    const double kD = 1;
+    const double kFF = 1;
+}
