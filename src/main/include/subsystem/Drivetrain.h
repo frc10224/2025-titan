@@ -21,10 +21,12 @@ public:
                DrivetrainConstants::kGearRatio *
                motor.GetEncoder().GetPosition();
     }
-
     inline void SetVelocity(double percent) {
         pid.SetReference(percent * DrivetrainConstants::kMaxRPM,
             rev::spark::SparkLowLevel::ControlType::kVelocity);
+    }
+    inline double GetEncoderSpeed() {
+        return motor.GetEncoder().GetVelocity();
     }
 };
 
