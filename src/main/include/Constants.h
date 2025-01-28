@@ -10,13 +10,14 @@ namespace DrivetrainConstants {
     const double kMaxTurnSpeed = 1;
     const double kGearRatio = 5.71;
     const units::inch_t kWheelRadius = 2_in;
-    const double kMaxRPM = 5000;
     const double kP = 0.001;
     const double kI = 0;
     const double kD = 0.001;
     // https://docs.revrobotics.com/brushless/neo/v1.1#motor-specifications
     // This value should be 1/Kv
     const double kVelocityFF = 1/473;
+    // Max power RPM
+    const double kMaxRPM = 2900;
     // CAN bus IDs
     const int kMotorId_LB = 3;
     const int kMotorId_LF = 4;
