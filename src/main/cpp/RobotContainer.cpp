@@ -1,5 +1,6 @@
 #include "RobotContainer.h"
 #include <frc2/command/Commands.h>
+#include <cmath>
 
 Drivetrain *g_drivetrain;
 Pose *g_pose;
@@ -16,7 +17,7 @@ frc2::CommandPtr RobotContainer::CreateAutoCommand() {
 
 frc2::CommandPtr RobotContainer::CreateTeleopCommand() {
     return drivetrain.MecanumDrive(
-        [this] { return this->driver.GetLeftX(); },
-        [this] { return this->driver.GetLeftY(); },
-        [this] { return this->driver.GetRightX(); });
+        [this] { return std::pow(this->driver.GetLeftX(), 3.); }, // cube these so it's easier to control
+        [this] { return std::pow(this->driver.GetLeftY(), 3.); },
+        [this] { return std::pow(this->driver.GetRightX(), 3.); });
 }
