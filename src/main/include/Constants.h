@@ -43,3 +43,10 @@ namespace ElevatorConstants {
     const double kD = 1;
     const double kFF = 1;
 }
+
+namespace CoralConstants {
+    const int kLeftMotorId = 9;
+    const int kRightMotorId = 10;
+    const int kP = 0;
+    const int kD = 0;
+}
