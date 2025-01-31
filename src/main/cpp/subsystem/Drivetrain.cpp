@@ -10,9 +10,9 @@
 #include "subsystem/Drivetrain.h"
 #include "subsystem/Pose.h"
 #include "Constants.h"
+#include "Bits.h"
 
 #define PID_TUNE
-#include "Bits.h"
 
 using namespace rev::spark;
 
@@ -25,10 +25,13 @@ Motor::Motor(int id) :
 
 	// we want the robot to stop when the drive releases the stick
 	config.SetIdleMode(SparkBaseConfig::IdleMode::kBrake);
-
-	using namespace DrivetrainConstants;
-	config.closedLoop.Pidf(kP, kI, kD, kVelocityFF);
-
+	
+	config.closedLoop
+		.P(DrivetrainConstants::kP)
+		.I(DrivetrainConstants::kI)
+		.D(DrivetrainConstants::kD)
+		.VelocityFF(DrivetrainConstants::kVelocityFF);
+	
 	motor.Configure(config,
 		SparkMax::ResetMode::kResetSafeParameters,
 		// if the controller power cycles we want it to remember these settings
@@ -36,8 +39,12 @@ Motor::Motor(int id) :
 }
 
 Drivetrain::Drivetrain() {
-	using namespace DrivetrainConstants;
-	pid_tune_init("Drivetrain", TUNE_P | TUNE_D | TUNE_FF, kP, kI, kD, kVelocityFF);
+#ifdef PID_TUNE
+	frc::SmartDashboard::PutNumber("Drivetrain/PID/P", DrivetrainConstants::kP);
+	frc::SmartDashboard::PutNumber("Drivetrain/PID/I", DrivetrainConstants::kI);
+	frc::SmartDashboard::PutNumber("Drivetrain/PID/D", DrivetrainConstants::kD);
+	frc::SmartDashboard::PutNumber("Drivetrain/PID/FF", DrivetrainConstants::kVelocityFF);
+#endif /* PID_TUNE */
 }
 
 void Drivetrain::Periodic() {
@@ -46,11 +53,26 @@ void Drivetrain::Periodic() {
 	frc::SmartDashboard::PutNumber("Drivetrain/Motor/Lb_RPM", motorLb.GetEncoderSpeed());
 	frc::SmartDashboard::PutNumber("Drivetrain/Motor/Rf_RPM", motorRf.GetEncoderSpeed());
 	frc::SmartDashboard::PutNumber("Drivetrain/Motor/Rb_RPM", motorRb.GetEncoderSpeed());
-
-	pid_tune(motorLf, TUNE_P | TUNE_D | TUNE_FF, "Drivetrain");
-	pid_tune(motorLb, TUNE_P | TUNE_D | TUNE_FF, "Drivetrain");
-	pid_tune(motorRf, TUNE_P | TUNE_D | TUNE_FF, "Drivetrain");
-	pid_tune(motorRb, TUNE_P | TUNE_D | TUNE_FF, "Drivetrain");
+#ifdef PID_TUNE
+	SparkBaseConfig config{};
+	double p = frc::SmartDashboard::GetNumber("Drivetrain/PID/P", DrivetrainConstants::kP);
+	double i = frc::SmartDashboard::GetNumber("Drivetrain/PID/I", DrivetrainConstants::kI);
+	double d = frc::SmartDashboard::GetNumber("Drivetrain/PID/D", DrivetrainConstants::kD);
+	double ff = frc::SmartDashboard::GetNumber("Drivetrain/PID/FF", DrivetrainConstants::kVelocityFF);
+	config.closedLoop.Pidf(p, i, d, ff);
+	motorLf.motor.Configure(config,
+		SparkMax::ResetMode::kNoResetSafeParameters,
+		SparkMax::PersistMode::kNoPersistParameters);
+	motorLb.motor.Configure(config,
+		SparkMax::ResetMode::kNoResetSafeParameters,
+		SparkMax::PersistMode::kNoPersistParameters);
+	motorRf.motor.Configure(config,
+		SparkMax::ResetMode::kNoResetSafeParameters,
+		SparkMax::PersistMode::kNoPersistParameters);
+	motorRb.motor.Configure(config,
+		SparkMax::ResetMode::kNoResetSafeParameters,
+		SparkMax::PersistMode::kNoPersistParameters);
+#endif /* PID_TUNE */
 }
 
 frc2::CommandPtr Drivetrain::MecanumDrive(Fn<double> XSpeed, Fn<double> YSpeed, Fn<double> ZRotate) {
