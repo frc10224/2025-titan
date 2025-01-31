@@ -2,9 +2,10 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 
-using namespace rev::spark;
-
 #define PID_TUNE
+#include "Bits.h"
+
+using namespace rev::spark;
 
 Elevator::Elevator() {
     SparkBaseConfig config{};
@@ -22,11 +23,8 @@ Elevator::Elevator() {
     rightMotor.Configure(config,
 		SparkMax::ResetMode::kResetSafeParameters,
 		SparkMax::PersistMode::kPersistParameters);
-#ifdef PID_TUNE
-    frc::SmartDashboard::PutNumber("Elevator/PID/P", ElevatorConstants::kP);
-	frc::SmartDashboard::PutNumber("Elevator/PID/D", ElevatorConstants::kD);
-	frc::SmartDashboard::PutNumber("Elevator/PID/FF", ElevatorConstants::kFF);
-#endif /* PID_TUNE */
+
+	pid_tune_init("Elevator", TUNE_P | TUNE_D, 0, 0, 0, 0.01, "");
 };
 
 void Elevator::Periodic() {
@@ -34,19 +32,7 @@ void Elevator::Periodic() {
         leftMotor.GetEncoder().GetVelocity());
     frc::SmartDashboard::PutNumber("Elevator/Encoder_Position",
         leftMotor.GetEncoder().GetPosition());
-#ifdef PID_TUNE
-	SparkBaseConfig config{};
-	double p = frc::SmartDashboard::GetNumber("Elevator/PID/P", ElevatorConstants::kP);
-	double d = frc::SmartDashboard::GetNumber("Elevator/PID/D", ElevatorConstants::kD);
-	double ff = frc::SmartDashboard::GetNumber("Elevator/PID/FF", ElevatorConstants::kFF);
-	config.closedLoop.Pidf(p, 0, d, ff);
-	leftMotor.Configure(config,
-		SparkMax::ResetMode::kNoResetSafeParameters,
-		SparkMax::PersistMode::kNoPersistParameters);
-	rightMotor.Configure(config,
-		SparkMax::ResetMode::kNoResetSafeParameters,
-		SparkMax::PersistMode::kNoPersistParameters);
-#endif /* PID_TUNE */
+	pid_tune(leftMotor, TUNE_P | TUNE_D, "Elevator");
 };
 
 void Elevator::SetPosition(double turns) {
