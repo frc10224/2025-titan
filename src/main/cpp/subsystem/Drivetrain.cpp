@@ -12,7 +12,7 @@
 #include "Constants.h"
 #include "Bits.h"
 
-#define PID_TUNE
+// #define PID_TUNE
 
 using namespace rev::spark;
 
@@ -23,8 +23,8 @@ Motor::Motor(int id) :
 		pid(motor.GetClosedLoopController()) {
 	SparkBaseConfig config{};
 
-	// we want the robot to stop when the drive releases the stick
-	config.SetIdleMode(SparkBaseConfig::IdleMode::kBrake);
+	// PID should stop fine for us
+	config.SetIdleMode(SparkBaseConfig::IdleMode::kCoast);
 	
 	config.closedLoop
 		.P(DrivetrainConstants::kP)
@@ -32,47 +32,46 @@ Motor::Motor(int id) :
 		.D(DrivetrainConstants::kD)
 		.VelocityFF(DrivetrainConstants::kVelocityFF);
 	
+	config.encoder.PositionConversionFactor(1);
+
 	motor.Configure(config,
 		SparkMax::ResetMode::kResetSafeParameters,
 		// if the controller power cycles we want it to remember these settings
 		SparkMax::PersistMode::kPersistParameters);
 }
 
-Drivetrain::Drivetrain() {
-#ifdef PID_TUNE
-	frc::SmartDashboard::PutNumber("Drivetrain/PID/P", DrivetrainConstants::kP);
-	frc::SmartDashboard::PutNumber("Drivetrain/PID/I", DrivetrainConstants::kI);
-	frc::SmartDashboard::PutNumber("Drivetrain/PID/D", DrivetrainConstants::kD);
-	frc::SmartDashboard::PutNumber("Drivetrain/PID/FF", DrivetrainConstants::kVelocityFF);
-#endif /* PID_TUNE */
+void Motor::Log(frc::sysid::SysIdRoutineLog *log, const char *title) {
+	log->Motor(title)
+		.voltage(motor.Get() *
+					frc::RobotController::GetBatteryVoltage())
+		.position(units::turn_t{motor.GetEncoder().GetPosition()})
+		.velocity(GetEncoderVelocity());
 }
+
+Drivetrain::Drivetrain() :
+	sysid_routine(frc2::sysid::Config{std::nullopt, std::nullopt, 3_s, nullptr},
+        frc2::sysid::Mechanism{
+            [this](units::volt_t driveVoltage) {
+                motorLf.SetVoltage(-driveVoltage);
+                motorLb.SetVoltage(-driveVoltage);
+                motorRf.SetVoltage(driveVoltage);
+                motorRb.SetVoltage(driveVoltage);
+            },
+            [this](frc::sysid::SysIdRoutineLog *log) {
+                motorLf.Log(log, "drive-leftFront");
+                motorLb.Log(log, "drive-leftBack");
+                motorRf.Log(log, "drive-rightFront");
+                motorRb.Log(log, "drive-rightBack");
+            },
+            this
+    }) {}
 
 void Drivetrain::Periodic() {
 	g_pose->UpdateFromWheelPositions(GetWheelPositions());
-	frc::SmartDashboard::PutNumber("Drivetrain/Motor/Lf_RPM", motorLf.GetEncoderSpeed());
-	frc::SmartDashboard::PutNumber("Drivetrain/Motor/Lb_RPM", motorLb.GetEncoderSpeed());
-	frc::SmartDashboard::PutNumber("Drivetrain/Motor/Rf_RPM", motorRf.GetEncoderSpeed());
-	frc::SmartDashboard::PutNumber("Drivetrain/Motor/Rb_RPM", motorRb.GetEncoderSpeed());
-#ifdef PID_TUNE
-	SparkBaseConfig config{};
-	double p = frc::SmartDashboard::GetNumber("Drivetrain/PID/P", DrivetrainConstants::kP);
-	double i = frc::SmartDashboard::GetNumber("Drivetrain/PID/I", DrivetrainConstants::kI);
-	double d = frc::SmartDashboard::GetNumber("Drivetrain/PID/D", DrivetrainConstants::kD);
-	double ff = frc::SmartDashboard::GetNumber("Drivetrain/PID/FF", DrivetrainConstants::kVelocityFF);
-	config.closedLoop.Pidf(p, i, d, ff);
-	motorLf.motor.Configure(config,
-		SparkMax::ResetMode::kNoResetSafeParameters,
-		SparkMax::PersistMode::kNoPersistParameters);
-	motorLb.motor.Configure(config,
-		SparkMax::ResetMode::kNoResetSafeParameters,
-		SparkMax::PersistMode::kNoPersistParameters);
-	motorRf.motor.Configure(config,
-		SparkMax::ResetMode::kNoResetSafeParameters,
-		SparkMax::PersistMode::kNoPersistParameters);
-	motorRb.motor.Configure(config,
-		SparkMax::ResetMode::kNoResetSafeParameters,
-		SparkMax::PersistMode::kNoPersistParameters);
-#endif /* PID_TUNE */
+	frc::SmartDashboard::PutNumber("Drivetrain/Motor/Lf_RPS", (double)motorLf.GetEncoderVelocity());
+	frc::SmartDashboard::PutNumber("Drivetrain/Motor/Lb_RPS", (double)motorLb.GetEncoderVelocity());
+	frc::SmartDashboard::PutNumber("Drivetrain/Motor/Rf_RPS", (double)motorRf.GetEncoderVelocity());
+	frc::SmartDashboard::PutNumber("Drivetrain/Motor/Rb_RPS", (double)motorRb.GetEncoderVelocity());
 }
 
 frc2::CommandPtr Drivetrain::MecanumDrive(Fn<double> XSpeed, Fn<double> YSpeed, Fn<double> ZRotate) {
@@ -91,10 +90,10 @@ frc2::CommandPtr Drivetrain::MecanumDrive(Fn<double> XSpeed, Fn<double> YSpeed, 
 
 		auto [lf, rf, lb, rb] =
       		frc::MecanumDrive::DriveCartesianIK(xSpeed, ySpeed, zRotate, g_pose->GyroAngle());
-		
-		motorLf.SetVelocity(lf);
+						
+		motorLf.SetVelocity(-lf);
 		motorRf.SetVelocity(rf);
-		motorLb.SetVelocity(lb);
+		motorLb.SetVelocity(-lb);
 		motorRb.SetVelocity(rb);
 
 	}, {this});
