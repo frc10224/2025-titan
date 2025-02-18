@@ -9,10 +9,10 @@ RobotContainer::RobotContainer() {
     g_drivetrain = &drivetrain;
     g_pose = &pose;
     // set up controller binds here
-    driver.A().WhileTrue(drivetrain.SysIdDynamic(frc2::sysid::Direction::kForward));
-    driver.B().WhileTrue(drivetrain.SysIdDynamic(frc2::sysid::Direction::kReverse));
-    driver.X().WhileTrue(drivetrain.SysIdQuasistatic(frc2::sysid::Direction::kForward));
-    driver.Y().WhileTrue(drivetrain.SysIdQuasistatic(frc2::sysid::Direction::kReverse));
+    driver.A().WhileTrue(elevator.SysIdDynamic(frc2::sysid::Direction::kForward));
+    driver.B().WhileTrue(elevator.SysIdDynamic(frc2::sysid::Direction::kReverse));
+    driver.X().WhileTrue(elevator.SysIdQuasistatic(frc2::sysid::Direction::kForward));
+    driver.Y().WhileTrue(elevator.SysIdQuasistatic(frc2::sysid::Direction::kReverse));
 }
 
 frc2::CommandPtr RobotContainer::CreateAutoCommand() {
