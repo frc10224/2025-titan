@@ -7,7 +7,7 @@
 
 Pose::Pose() : 
         aprilTagLayout(frc::AprilTagFieldLayout::LoadField(
-            frc::AprilTagField::k2025Reefscape)) {
+            frc::AprilTagField::k2025ReefscapeAndyMark)) {
     navx.Reset();
     backVisionEstimator.SetMultiTagFallbackStrategy(photon::LOWEST_AMBIGUITY);
 }
