@@ -24,6 +24,9 @@ Coral::Coral() {
     rightMotor.Configure(config,
 		SparkMax::ResetMode::kResetSafeParameters,
 		SparkMax::PersistMode::kPersistParameters);
+
+	laser.set_ranging_mode(grpl::LaserCanRangingMode::Short);
+	laser.set_timing_budget(grpl::LaserCanTimingBudget::TB33ms);
 };
 
 void Coral::Periodic() {
@@ -31,8 +34,27 @@ void Coral::Periodic() {
         leftMotor.GetEncoder().GetVelocity());
 };
 
-frc2::CommandPtr Coral::Feed(Fn<double> Speed) {
-	return frc2::cmd::RunEnd([this, Speed] {
-        leftMotor.Set(Speed());
-	}, [this] {leftMotor.Set(0);}, {this});
+frc2::CommandPtr Coral::Collect() {
+	return frc2::cmd::Either(
+		frc2::cmd::Run([this] { rightMotor.Set(0.0); }),
+		frc2::cmd::Run([this] { rightMotor.Set(0.5); }),
+		[this] {
+			std::optional<grpl::LaserCanMeasurement> measurement = laser.get_measurement();
+			return measurement.has_value()
+				&& measurement.value().distance_mm > 50;
+		}
+	);
+}
+
+frc2::CommandPtr Coral::Spit() {
+	return frc2::cmd::Either(
+		frc2::cmd::Run([this] { rightMotor.Set(0.5); }),
+		frc2::cmd::Run([this] { rightMotor.Set(0.0); }),
+		[this] {
+			std::optional<grpl::LaserCanMeasurement> measurement = laser.get_measurement();
+			return measurement.has_value()
+				&& measurement.value().distance_mm > 50;
+		}
+	);
+
 }

@@ -47,4 +47,5 @@ namespace CoralConstants {
     const int kRightMotorId = 10;
     const int kP = 0;
     const int kD = 0;
+    const int kLaserCanId = 12;
 }

@@ -1,4 +1,5 @@
 #include <frc2/command/SubsystemBase.h>
+#include <grpl/LaserCan.h>
 #include <rev/SparkMax.h>
 
 #include "Constants.h"
@@ -10,8 +11,10 @@ private:
         rev::spark::SparkMax::MotorType::kBrushless};
     rev::spark::SparkMax rightMotor{CoralConstants::kRightMotorId,
         rev::spark::SparkMax::MotorType::kBrushless};
+    grpl::LaserCan laser{CoralConstants::kLaserCanId};
 public:
     Coral();
     void Periodic() override;
-    frc2::CommandPtr Feed(Fn<double> Speed);
+    frc2::CommandPtr Collect();
+    frc2::CommandPtr Spit();
 };
