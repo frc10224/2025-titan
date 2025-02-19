@@ -34,12 +34,11 @@ namespace PoseConstants {
 }
 
 namespace ElevatorConstants {
-    // TODO: get real ids
     const int kLeftMotorId = 6;
     const int kRightMotorId = 5;
     const double kP = 1;
-    const double kD = 1;
-    const double kFF = 1;
+    const double kD = 0.0000071476;
+    const double kFF = 0.11312;
 }
 
 namespace CoralConstants {

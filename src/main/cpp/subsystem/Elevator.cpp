@@ -1,6 +1,7 @@
 #include "subsystem/Elevator.h"
 
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <frc2/command/Commands.h>
 #include <frc/RobotController.h>
 
 using namespace rev::spark;
@@ -27,11 +28,18 @@ Elevator::Elevator() :
         .D(ElevatorConstants::kD)
         .VelocityFF(ElevatorConstants::kFF);
 
+    config.softLimit.ReverseSoftLimit(0);
+    config.softLimit.ReverseSoftLimitEnabled(true);
+
     leftMotor.Configure(config,
 		SparkMax::ResetMode::kResetSafeParameters,
 		SparkMax::PersistMode::kPersistParameters);
 
-    config.Follow(rightMotor, true);
+    config.softLimit.ReverseSoftLimitEnabled(false);
+
+    config.softLimit.ForwardSoftLimitEnabled(true);
+    config.softLimit.ForwardSoftLimit(0);
+    config.Follow(leftMotor, true);
 
     rightMotor.Configure(config,
 		SparkMax::ResetMode::kResetSafeParameters,
@@ -41,11 +49,20 @@ Elevator::Elevator() :
 void Elevator::Periodic() {
     frc::SmartDashboard::PutNumber("Elevator/Velocity",
         leftMotor.GetEncoder().GetVelocity());
-    frc::SmartDashboard::PutNumber("Elevator/Encoder_Position",
+    frc::SmartDashboard::PutNumber("Elevator/LeftEncoder_Position",
         leftMotor.GetEncoder().GetPosition());
+    frc::SmartDashboard::PutNumber("Elevator/RightEncoder_Position",
+        rightMotor.GetEncoder().GetPosition());
 };
 
-void Elevator::SetPosition(double turns) {
-    leftMotor.GetClosedLoopController()
-        .SetReference(turns, SparkLowLevel::ControlType::kPosition);
+frc2::CommandPtr Elevator::SetPosition(double turns) {
+    return frc2::cmd::StartEnd([this, turns] {
+            leftMotor.GetClosedLoopController()
+                .SetReference(turns, SparkLowLevel::ControlType::kPosition);
+        },
+        [this] {
+            leftMotor.GetClosedLoopController()
+                .SetReference(0, SparkLowLevel::ControlType::kPosition);
+        }
+    );
 }
