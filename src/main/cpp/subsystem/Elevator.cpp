@@ -5,14 +5,11 @@
 
 using namespace rev::spark;
 
-#define PID_TUNE
-
 Elevator::Elevator() :
 	sysid_routine(frc2::sysid::Config{std::nullopt, std::nullopt, std::nullopt, nullptr},
         frc2::sysid::Mechanism{
             [this](units::volt_t driveVoltage) {
                 leftMotor.SetVoltage(driveVoltage);
-                rightMotor.SetVoltage(-driveVoltage);
             },
             [this](frc::sysid::SysIdRoutineLog *log) {
 				log->Motor("elevator-Left")
@@ -34,7 +31,8 @@ Elevator::Elevator() :
 		SparkMax::ResetMode::kResetSafeParameters,
 		SparkMax::PersistMode::kPersistParameters);
 
-    // config.Follow(rightMotor);
+    config.Follow(rightMotor, true);
+
     rightMotor.Configure(config,
 		SparkMax::ResetMode::kResetSafeParameters,
 		SparkMax::PersistMode::kPersistParameters);
