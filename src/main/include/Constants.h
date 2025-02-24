@@ -21,8 +21,8 @@ namespace DrivetrainConstants {
     const int kMotorId_LF = 1;
     const int kMotorId_RF = 3;
     const int kMotorId_RB = 4;
-    const frc::Translation2d kFrontLeftLocation{0.381_m, 0.381_m};
-    const frc::Translation2d kFrontRightLocation{0.381_m, -0.381_m};
+    const frc::Translation2d kFrontLeftLocation{0.381_m, 11_in};
+    const frc::Translation2d kFrontRightLocation{0.381_m, -11_in};
     const frc::Translation2d kBackLeftLocation{-0.381_m, 0.381_m};
     const frc::Translation2d kBackRightLocation{-0.381_m, -0.381_m};
 };
@@ -36,15 +36,17 @@ namespace PoseConstants {
 namespace ElevatorConstants {
     const int kLeftMotorId = 6;
     const int kRightMotorId = 5;
-    const double kP = 1;
-    const double kD = 0.0000071476;
-    const double kFF = 0.11312;
+    const double kP = 0.086188;
+    const double kD = 0.92;
+    const double kFF = 0.12367;
+    const double kTopLimitSpinCount = 89;
 }
 
 namespace CoralConstants {
-    const int kLeftMotorId = 9;
-    const int kRightMotorId = 10;
-    const int kP = 0;
-    const int kD = 0;
-    const int kLaserCanId = 12;
+    const int kLeftMotorId = 7;
+    const int kRightMotorId = 8;
+    const double kP = 0.0001;
+    const double kD = 0;
+    const double kFF = 0.0003;
+    const int kLaserCanId = 9;
 }

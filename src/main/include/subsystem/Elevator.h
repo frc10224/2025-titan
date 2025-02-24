@@ -5,7 +5,7 @@
 #include "Constants.h"
 
 class Elevator : public frc2::SubsystemBase {
-private:
+public:
     rev::spark::SparkMax leftMotor{ElevatorConstants::kLeftMotorId,
         rev::spark::SparkMax::MotorType::kBrushless};
     rev::spark::SparkMax rightMotor{ElevatorConstants::kRightMotorId,

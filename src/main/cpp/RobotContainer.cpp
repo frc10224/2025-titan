@@ -8,11 +8,13 @@ Pose *g_pose;
 RobotContainer::RobotContainer() {
     g_drivetrain = &drivetrain;
     g_pose = &pose;
-    // set up controller binds here
-    driver.A().WhileTrue(elevator.SysIdDynamic(frc2::sysid::Direction::kForward));
-    driver.B().WhileTrue(elevator.SysIdDynamic(frc2::sysid::Direction::kReverse));
-    driver.X().WhileTrue(elevator.SysIdQuasistatic(frc2::sysid::Direction::kForward));
-    driver.Y().WhileTrue(elevator.SysIdQuasistatic(frc2::sysid::Direction::kReverse));
+    driver.A().WhileTrue(coral.Collect());
+    driver.B().WhileTrue(coral.Spit());
+    //driver.X().WhileTrue(elevator.SysIdQuasistatic(frc2::sysid::Direction::kReverse   ));
+    //driver.Y().WhileTrue(elevator.SysIdQuasistatic(frc2::sysid::Direction::kForward));
+    //driver.A().WhileTrue(elevator.SysIdDynamic(frc2::sysid::Direction::kReverse));
+    //driver.B().WhileTrue(elevator.SysIdDynamic(frc2::sysid::Direction::kForward));
+    driver.Y().WhileTrue(elevator.SetPosition(38));
 }
 
 frc2::CommandPtr RobotContainer::CreateAutoCommand() {
@@ -21,8 +23,9 @@ frc2::CommandPtr RobotContainer::CreateAutoCommand() {
 
 frc2::CommandPtr RobotContainer::CreateTeleopCommand() {
     return drivetrain.MecanumDrive(
-        [this] { return std::pow(this->driver.GetLeftX(), 3.); }, // cube these so it's easier to control
-        [this] { return std::pow(this->driver.GetLeftY(), 3.); },
+        [this] { return std::pow(-this->driver.GetLeftY(), 3.); }, // cube these so it's easier to control
+        [this] { return std::pow(this->driver.GetLeftX(), 3.); },
         [this] { return std::pow(this->driver.GetRightX(), 3.); });
+    //return frc2::cmd::Run([this] { this->elevator.leftMotor.Set(this->driver.GetLeftX()); });
     //return frc2::cmd::None();
 }

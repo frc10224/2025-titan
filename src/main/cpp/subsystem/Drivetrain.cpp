@@ -25,6 +25,8 @@ Motor::Motor(int id) :
 
 	// PID should stop fine for us
 	config.SetIdleMode(SparkBaseConfig::IdleMode::kCoast);
+
+	config.SmartCurrentLimit(25);
 	
 	config.closedLoop
 		.P(DrivetrainConstants::kP)
@@ -89,7 +91,7 @@ frc2::CommandPtr Drivetrain::MecanumDrive(Fn<double> XSpeed, Fn<double> YSpeed, 
 		frc::ApplyDeadband(zRotate, 0.1);
 
 		auto [lf, rf, lb, rb] =
-      		frc::MecanumDrive::DriveCartesianIK(xSpeed, ySpeed, zRotate, g_pose->GyroAngle());
+      		frc::MecanumDrive::DriveCartesianIK(xSpeed, ySpeed, zRotate/*, g_pose->GyroAngle()*/);
 						
 		motorLf.SetVelocity(-lf);
 		motorRf.SetVelocity(rf);

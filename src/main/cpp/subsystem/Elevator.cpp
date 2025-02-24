@@ -28,22 +28,28 @@ Elevator::Elevator() :
         .D(ElevatorConstants::kD)
         .VelocityFF(ElevatorConstants::kFF);
 
-    config.softLimit.ReverseSoftLimit(0);
     config.softLimit.ReverseSoftLimitEnabled(true);
+    config.softLimit.ForwardSoftLimitEnabled(false);
+
+    config.softLimit.ReverseSoftLimit(0);
+    //config.softLimit.ForwardSoftLimit(ElevatorConstants::kTopLimitSpinCount);
 
     leftMotor.Configure(config,
 		SparkMax::ResetMode::kResetSafeParameters,
 		SparkMax::PersistMode::kPersistParameters);
 
-    config.softLimit.ReverseSoftLimitEnabled(false);
-
     config.softLimit.ForwardSoftLimitEnabled(true);
+    config.softLimit.ReverseSoftLimitEnabled(false);
     config.softLimit.ForwardSoftLimit(0);
+    //config.softLimit.ReverseSoftLimit(-ElevatorConstants::kTopLimitSpinCount);
+
     config.Follow(leftMotor, true);
 
     rightMotor.Configure(config,
 		SparkMax::ResetMode::kResetSafeParameters,
 		SparkMax::PersistMode::kPersistParameters);
+
+    frc::SmartDashboard::PutNumber("Elevator/Compensation", 0);
 };
 
 void Elevator::Periodic() {
@@ -58,11 +64,10 @@ void Elevator::Periodic() {
 frc2::CommandPtr Elevator::SetPosition(double turns) {
     return frc2::cmd::StartEnd([this, turns] {
             leftMotor.GetClosedLoopController()
-                .SetReference(turns, SparkLowLevel::ControlType::kPosition);
+                .SetReference(turns + frc::SmartDashboard::GetNumber("Elevator/Compensation", 0), SparkLowLevel::ControlType::kPosition);
         },
         [this] {
-            leftMotor.GetClosedLoopController()
-                .SetReference(0, SparkLowLevel::ControlType::kPosition);
+            leftMotor.Set(0);
         }
     );
 }

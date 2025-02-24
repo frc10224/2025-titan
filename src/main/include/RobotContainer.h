@@ -11,6 +11,7 @@ private:
     frc2::CommandXboxController driver{0};
     Drivetrain drivetrain;
     Elevator elevator;
+    Coral coral;
     Pose pose;
 public:
     RobotContainer();
