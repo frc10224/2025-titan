@@ -6,7 +6,7 @@
 
 using namespace rev::spark;
 
-Elevator::Elevator() :
+Elevator::Elevator() : setpoint(0), 
 	sysid_routine(frc2::sysid::Config{std::nullopt, std::nullopt, std::nullopt, nullptr},
         frc2::sysid::Mechanism{
             [this](units::volt_t driveVoltage) {
@@ -69,5 +69,15 @@ frc2::CommandPtr Elevator::SetPosition(double turns) {
         [this] {
             leftMotor.Set(0);
         }
+    );
+}
+
+
+frc2::CommandPtr Elevator::MoveUp(double turns) {
+    return frc2::cmd::RunOnce([this, turns] {
+            setpoint += turns;
+            leftMotor.GetClosedLoopController()
+                .SetReference(setpoint, SparkLowLevel::ControlType::kPosition);
+        }, {this}
     );
 }

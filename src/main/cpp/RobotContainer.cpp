@@ -14,7 +14,8 @@ RobotContainer::RobotContainer() {
     //driver.Y().WhileTrue(elevator.SysIdQuasistatic(frc2::sysid::Direction::kForward));
     //driver.A().WhileTrue(elevator.SysIdDynamic(frc2::sysid::Direction::kReverse));
     //driver.B().WhileTrue(elevator.SysIdDynamic(frc2::sysid::Direction::kForward));
-    driver.Y().WhileTrue(elevator.SetPosition(38));
+    driver.X().OnTrue(elevator.MoveUp(1));
+    driver.Y().OnTrue(elevator.MoveUp(-1));
 }
 
 frc2::CommandPtr RobotContainer::CreateAutoCommand() {
