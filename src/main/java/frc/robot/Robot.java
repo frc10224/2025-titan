@@ -1,14 +1,14 @@
-  // Copyright (c) FIRST and other WPILib contributors.
-  // Open Source Software; you can modify and/or share it under the terms of
-  // the WPILib BSD license file in the root directory of this project.
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
-  package frc.robot;
+package frc.robot;
 
-  import edu.wpi.first.wpilibj.TimedRobot;
-  import edu.wpi.first.wpilibj2.command.Command;
-  import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-  public class Robot extends TimedRobot {
+public class Robot extends TimedRobot {
 	// this gets populated by the dashboard picker ideally
 	private Command autoCommand;
 	private final RobotContainer container = new RobotContainer();
@@ -18,11 +18,11 @@
 
 	@Override
 	public void robotPeriodic() {
-	  // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
-	  // commands, running already-scheduled commands, removing finished or interrupted commands,
-	  // and running subsystem periodic() methods.  This must be called from the robot's periodic
-	  // block in order for anything in the Command-based framework to work.
-	  CommandScheduler.getInstance().run();
+		// Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
+		// commands, running already-scheduled commands, removing finished or interrupted commands,
+		// and running subsystem periodic() methods.  This must be called from the robot's periodic
+		// block in order for anything in the Command-based framework to work.
+		CommandScheduler.getInstance().run();
 	}
 
 	@Override
@@ -33,7 +33,6 @@
 
 	@Override
 	public void autonomousInit() {
-	
 		autoCommand = container.getAutonomousCommand();
 
 		if (teleopCommand != null)
@@ -60,9 +59,11 @@
 
 	@Override
 	public void testInit() {
-	  CommandScheduler.getInstance().cancelAll();
+		CommandScheduler.getInstance().cancelAll();
 	}
 
 	@Override
 	public void testPeriodic() {}
-  }
+}
+
+// vi: sw=4 ts=4 noet tw=80 cc=80

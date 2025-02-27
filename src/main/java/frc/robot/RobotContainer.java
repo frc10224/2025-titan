@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.subsystems.*;
-import frc.robot.Constants.*;
 
 public class RobotContainer {
 	private final Drivetrain drivetrain = new Drivetrain();
@@ -41,3 +40,5 @@ public class RobotContainer {
 		);
 	}
 }
+
+// vi: sw=4 ts=4 noet tw=80 cc=80

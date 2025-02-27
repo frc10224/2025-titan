@@ -177,3 +177,5 @@ public class Drivetrain extends SubsystemBase {
 		return sysidRoutine.quasistatic(direction);
 	}
 }
+
+// vi: sw=4 ts=4 noet tw=80 cc=80
