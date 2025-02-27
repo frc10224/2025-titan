@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import static edu.wpi.first.units.Units.Revolutions;
 import static edu.wpi.first.units.Units.RevolutionsPerSecond;
@@ -52,28 +53,17 @@ public class Coral extends SubsystemBase {
         );
 
         SparkMaxConfig config = new SparkMaxConfig();
-        config.idleMode(SparkMaxConfig.IdleMode.kCoast);
+        config.idleMode(SparkMaxConfig.IdleMode.kBrake);
         config.closedLoop
-            .p(ElevatorConstants.kP)
-            .d(ElevatorConstants.kD)
-            .velocityFF(ElevatorConstants.kFF);
-
-        config.softLimit.reverseSoftLimitEnabled(true);
-        config.softLimit.forwardSoftLimitEnabled(false);
-
-        config.softLimit.reverseSoftLimit(0);
-        //config.softLimit.ForwardSoftLimit(ElevatorConstants::kTopLimitSpinCount);
+            .p(CoralConstants.kP)
+            .d(CoralConstants.kD)
+            .velocityFF(CoralConstants.kFF);
 
         leftMotor.configure(config,
             SparkMax.ResetMode.kResetSafeParameters,
             SparkMax.PersistMode.kPersistParameters);
 
-        config.softLimit.forwardSoftLimitEnabled(true);
-        config.softLimit.reverseSoftLimitEnabled(false);
-        config.softLimit.forwardSoftLimit(0);
-        //config.softLimit.ReverseSoftLimit(-ElevatorConstants::kTopLimitSpinCount);
-
-        config.follow(leftMotor, true);
+        //config.follow(leftMotor, true);
 
         rightMotor.configure(config,
             SparkMax.ResetMode.kResetSafeParameters,
@@ -88,22 +78,34 @@ public class Coral extends SubsystemBase {
 		SmartDashboard.putNumber("Drivetrain/Motor/Rf_RPS", motorRf.GetEncoderVelocity());
 		SmartDashboard.putNumber("Drivetrain/Motor/Rb_RPS", motorRb.GetEncoderVelocity()); */
         laserDist = laser.getMeasurement().distance_mm;
+        SmartDashboard.putNumber("Coral/LaserDist", laserDist);
 	}
 
-    void setVelocity(double rpm) {
+    void setVelocity(double lRPM, double rRPM) {
         leftMotor.getClosedLoopController()
-            .setReference(rpm, SparkMax.ControlType.kVelocity);
+            .setReference(lRPM, SparkMax.ControlType.kVelocity);
+        rightMotor.getClosedLoopController()
+            .setReference(-rRPM, SparkMax.ControlType.kVelocity);
     }
 
     public Command collect() {
         return Commands.runEnd(
             () -> {
                 if (laserDist > 10)
-                    setVelocity(150);
+                    setVelocity(150, 150);
                 else
-                    setVelocity(0);
+                    setVelocity(-0.1, -0.1);
             },
-            () -> { setVelocity(0); }
+            () -> { setVelocity(-0.1, -0.1); }
+        );
+    }
+
+    public Command slurp() {
+        return Commands.runEnd(
+            () -> {
+                    setVelocity(-100, -100);
+            },
+            () -> { setVelocity(-0.5, -0.5); }
         );
     }
     
@@ -111,11 +113,23 @@ public class Coral extends SubsystemBase {
         return Commands.runEnd(
             () -> {
                 if (laserDist < 10)
-                    setVelocity(0);
+                    setVelocity(250, 250);
                 else
-                    setVelocity(250);
+                    setVelocity(0, 0);
             },
-            () -> { setVelocity(0); }
+            () -> { setVelocity(0, 0); }
+        );
+    }
+
+    public Command spitFastOneSide() {
+        return Commands.runEnd(
+            () -> {
+                if (laserDist < 10)
+                    setVelocity(250, 80);
+                else
+                    setVelocity(0, 0);
+            },
+            () -> { setVelocity(0, 0); }
         );
     }
 
