@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.subsystems.*;
+import frc.robot.Constants.*;
 
 public class RobotContainer {
 	private final Drivetrain drivetrain = new Drivetrain();
@@ -18,8 +19,14 @@ public class RobotContainer {
 
 	public RobotContainer() {
 		// set controller binds
+		// XXX: should this be on an operator controller?
 		driver.a().whileTrue(coral.collect());
-		driver.x().whileTrue(elevator.setPosition(20));
+		driver.b().whileTrue(coral.spit());
+		driver.x().whileTrue(coral.slurp());
+		driver.rightTrigger().onTrue(elevator.setPosition(0));
+		driver.rightBumper().onTrue(elevator.setPosition(ElevatorConstants.kLevel1Position));
+		driver.leftTrigger().onTrue(elevator.setPosition(ElevatorConstants.kLevel2Position));
+		driver.leftBumper().onTrue(elevator.setPosition(ElevatorConstants.kLevel3Position));
 	}
 
 	public Command getAutonomousCommand() {
@@ -28,9 +35,10 @@ public class RobotContainer {
 
 	public Command getTeleopCommand() {
 		return drivetrain.MecanumDrive(
+			() -> { return -driver.getLeftY(); },
 			() -> { return driver.getLeftX(); },
-			() -> { return driver.getLeftY(); },
 			() -> { return driver.getRightX(); }
 		);
+		//return Commands.none();
 	}
 }
