@@ -1,11 +1,11 @@
 package frc.robot.subsystems;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
-//import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
-import frc.robot.Constants.DrivetrainConstants;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -13,22 +13,21 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj.RobotController;
 
-import java.util.function.DoubleSupplier;
-
 import static edu.wpi.first.units.Units.*;
 
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.SparkBase.*;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-class Motor {
+import static frc.robot.Constants.DrivetrainConstants.*;
+
+class DriveMotor {
 		SparkMax motor;
 		SparkClosedLoopController pid;
 		SparkRelativeEncoder encoder;
 
-		public Motor(int id) {
-			motor = new SparkMax(id, MotorType.kBrushless);
+		public DriveMotor(int id) {
+			motor = new SparkMax(id, SparkMax.MotorType.kBrushless);
 			pid = motor.getClosedLoopController();
 
 			SparkMaxConfig config = new SparkMaxConfig();
@@ -38,28 +37,29 @@ class Motor {
 
 			config.smartCurrentLimit(30);
 			
-			config.closedLoop
-				.p(DrivetrainConstants.kP)
-				.i(DrivetrainConstants.kI)
-				.d(DrivetrainConstants.kD)
-				.velocityFF(DrivetrainConstants.kVelocityFF);
+			config.closedLoop.pidf(kP, 0, kD, kFF);
 			
 			config.encoder.positionConversionFactor(1);
 
 			motor.configure(config,
 				SparkMax.ResetMode.kResetSafeParameters,
-				// if the controller power cycles we want it to remember these settings
+				// if the controller power cycles we want it to remember these
+				// settings
 				SparkMax.PersistMode.kPersistParameters);
 		}
 		
 		Distance getWheelDistance() {
-			return DrivetrainConstants.kWheelRadius
-				.times(DrivetrainConstants.kGearRatio * motor.getEncoder().getPosition());
+			return kWheelRadius
+				.times(kGearRatio)
+				.times(motor.getEncoder().getPosition());
 		}
 
+		/// Set the target motor percentage, (attempting to) keep RPM constant
 		void setVelocity(double percent) {
-				pid.setReference(percent * DrivetrainConstants.kMaxRPM, ControlType.kVelocity);
+				pid.setReference(percent * kMaxRPM, ControlType.kVelocity);
 		}
+
+		/// Set the target motor voltage
 		void setVoltage(Voltage voltage) {
 				motor.setVoltage(voltage);
 		}
@@ -76,83 +76,89 @@ class Motor {
 };
 
 public class Drivetrain extends SubsystemBase {
-	private Motor motorLf = new Motor(DrivetrainConstants.kMotorId_LF);
-	private Motor motorLb = new Motor(DrivetrainConstants.kMotorId_LB);
-	private Motor motorRf = new Motor(DrivetrainConstants.kMotorId_RF);
-	private Motor motorRb = new Motor(DrivetrainConstants.kMotorId_RB); 
+	private final DriveMotor motorLf = new DriveMotor(kMotorId_LF);
+	private final DriveMotor motorLb = new DriveMotor(kMotorId_LB);
+	private final DriveMotor motorRf = new DriveMotor(kMotorId_RF);
+	private final DriveMotor motorRb = new DriveMotor(kMotorId_RB); 
 	
-	private SysIdRoutine sysidRoutine;
+	private final SysIdRoutine sysidRoutine = new SysIdRoutine(
+		new SysIdRoutine.Config(null, null, Seconds.of(3), null),
+		new SysIdRoutine.Mechanism(
+			(Voltage driveVoltage) -> {
+				motorLf.setVoltage(driveVoltage.unaryMinus());
+				motorLb.setVoltage(driveVoltage.unaryMinus());
+				motorRf.setVoltage(driveVoltage);
+				motorRb.setVoltage(driveVoltage);
+			},
+			(SysIdRoutineLog log) -> {
+				motorLf.log(log, "drive-leftFront");
+				motorLb.log(log, "drive-leftBack");
+				motorRf.log(log, "drive-rightFront");
+				motorRb.log(log, "drive-rightBack");
+			},
+			this
+		)
+	);
 		
-	public Drivetrain() {
-			sysidRoutine = new SysIdRoutine(
-					new SysIdRoutine.Config(null, null, Seconds.of(3), null),
-					new SysIdRoutine.Mechanism(
-					(Voltage driveVoltage) -> {
-								motorLf.setVoltage(driveVoltage.unaryMinus());
-							motorLb.setVoltage(driveVoltage.unaryMinus());
-								motorRf.setVoltage(driveVoltage);
-								motorRb.setVoltage(driveVoltage);
-						},
-						(SysIdRoutineLog log) -> {
-							motorLf.log(log, "drive-leftFront");
-							motorLb.log(log, "drive-leftBack");
-							motorRf.log(log, "drive-rightFront");
-							motorRb.log(log, "drive-rightBack");
-						},
-						this
-			)
-		);
-	}
+	public Drivetrain() {}
 
 	@Override
 	public void periodic() {
-		// g_pose->UpdateFromWheelPositions(GetWheelPositions());
-		/* SmartDashboard.putNumber("Drivetrain/Motor/Lf_RPS", motorLf.GetEncoderVelocity());
-		SmartDashboard.putNumber("Drivetrain/Motor/Lb_RPS", motorLb.GetEncoderVelocity());
-		SmartDashboard.putNumber("Drivetrain/Motor/Rf_RPS", motorRf.GetEncoderVelocity());
-		SmartDashboard.putNumber("Drivetrain/Motor/Rb_RPS", motorRb.GetEncoderVelocity()); */
+		// TODO: odometry updating stuff
 	}
 
-	public Command MecanumDrive(DoubleSupplier XSpeed, DoubleSupplier YSpeed, DoubleSupplier ZRotate) {
+	public Command MecanumDrive(DoubleSupplier XSpeed, DoubleSupplier YSpeed,
+			DoubleSupplier ZRotate) {
 		return Commands.run(() -> {
 			double xSpeed = XSpeed.getAsDouble();
 			double ySpeed = YSpeed.getAsDouble();
 			double zRotate = ZRotate.getAsDouble();
+
+			// if we are in the deadzone, just set it to zero. otherwise,
+			// pull the value down to start at zero
+			//
+			// for example, the range
+			// 0.0 -----==================== 1.0
+			//     dead     values we want
+			//
+			// becomes
+			// 0.0 ==================== 0.85
 		
-			if (Math.abs(xSpeed) < DrivetrainConstants.kControllerDeadzone)
-				xSpeed = 0;
-			else 
-				xSpeed -= Math.signum(xSpeed) * DrivetrainConstants.kControllerDeadzone;
+			if (Math.abs(xSpeed) < kControllerDeadzone) xSpeed = 0;
+			else xSpeed -= Math.signum(xSpeed) * kControllerDeadzone;
 
-			if (Math.abs(ySpeed) < DrivetrainConstants.kControllerDeadzone) 
-				ySpeed = 0;
-			else
-				ySpeed -= Math.signum(ySpeed) * DrivetrainConstants.kControllerDeadzone;
+			if (Math.abs(ySpeed) < kControllerDeadzone) ySpeed = 0;
+			else ySpeed -= Math.signum(ySpeed) * kControllerDeadzone;
 
-			if (Math.abs(zRotate) < DrivetrainConstants.kControllerDeadzone)
-				zRotate = 0;
-			else 
-				zRotate -= Math.signum(zRotate) * DrivetrainConstants.kControllerDeadzone;
+			if (Math.abs(zRotate) < kControllerDeadzone) zRotate = 0;
+			else zRotate -= Math.signum(zRotate) * kControllerDeadzone;
+			
+			// now that we are operating in that range we want from 0 to 
+			// 1 - deadzone we can scale it back up so we are back to the
+			// range 0 to 1
+			xSpeed /= 1. - kControllerDeadzone;
+			ySpeed /= 1. - kControllerDeadzone;
+			zRotate /= 1. - kControllerDeadzone;
 
-			xSpeed /= 1. - DrivetrainConstants.kControllerDeadzone;
-			ySpeed /= 1. - DrivetrainConstants.kControllerDeadzone;
-			zRotate /= 1. - DrivetrainConstants.kControllerDeadzone;
+			// scale factors
+			xSpeed *= kMaxDriveSpeed;
+			ySpeed *= kMaxDriveSpeed;
+			zRotate *= kMaxTurnSpeed;
 
-			xSpeed *= DrivetrainConstants.kMaxDriveSpeed;
-			ySpeed *= DrivetrainConstants.kMaxDriveSpeed;
-			zRotate *= DrivetrainConstants.kMaxTurnSpeed;
-
+			// curve
 			xSpeed = Math.pow(xSpeed, 3);
 			ySpeed = Math.pow(ySpeed, 3);
 			zRotate = Math.pow(zRotate, 3);
 
+			// we are omitting the gyro angle here because field relative
+			// control on mecanum frankly is horrible
 			MecanumDrive.WheelSpeeds ws =
-				MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate/*, g_pose->GyroAngle()*/);
+				MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate);
 
-			motorLf.setVelocity(-ws.frontLeft * DrivetrainConstants.kMaxRPM);
-			motorRf.setVelocity(ws.frontRight * DrivetrainConstants.kMaxRPM);
-			motorLb.setVelocity(-ws.rearLeft * DrivetrainConstants.kMaxRPM);
-			motorRb.setVelocity(ws.rearRight * DrivetrainConstants.kMaxRPM);
+			motorLf.setVelocity(-ws.frontLeft * kMaxRPM);
+			motorRf.setVelocity(ws.frontRight * kMaxRPM);
+			motorLb.setVelocity(-ws.rearLeft * kMaxRPM);
+			motorRb.setVelocity(ws.rearRight * kMaxRPM);
 		}, this);
 	}
 

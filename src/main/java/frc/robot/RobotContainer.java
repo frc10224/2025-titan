@@ -23,10 +23,10 @@ public class RobotContainer {
 		driver.a().whileTrue(coral.collect());
 		driver.b().whileTrue(coral.spit());
 		driver.x().whileTrue(coral.slurp());
-		driver.rightTrigger().onTrue(elevator.setPosition(0));
-		driver.rightBumper().onTrue(elevator.setPosition(ElevatorConstants.kLevel1Position));
-		driver.leftTrigger().onTrue(elevator.setPosition(ElevatorConstants.kLevel2Position));
-		driver.leftBumper().onTrue(elevator.setPosition(ElevatorConstants.kLevel3Position));
+		driver.rightTrigger().onTrue(elevator.setLevel(0));
+		driver.rightBumper().onTrue(elevator.setLevel(1));
+		driver.leftTrigger().onTrue(elevator.setLevel(2));
+		driver.leftBumper().onTrue(elevator.setLevel(3));
 	}
 
 	public Command getAutonomousCommand() {
@@ -39,6 +39,5 @@ public class RobotContainer {
 			() -> { return driver.getLeftX(); },
 			() -> { return driver.getRightX(); }
 		);
-		//return Commands.none();
 	}
 }

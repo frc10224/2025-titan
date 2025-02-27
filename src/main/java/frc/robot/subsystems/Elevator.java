@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-import frc.robot.Constants.ElevatorConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
@@ -15,12 +14,17 @@ import edu.wpi.first.wpilibj2.command.Commands;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import static frc.robot.Constants.ElevatorConstants.*;
+
 public class Elevator extends SubsystemBase {
-	private SparkMax leftMotor = new SparkMax(ElevatorConstants.kLeftMotorId, SparkMax.MotorType.kBrushless);
-	private SparkMax rightMotor = new SparkMax(ElevatorConstants.kRightMotorId, SparkMax.MotorType.kBrushless);
+	private final SparkMax leftMotor =
+        new SparkMax(kLeftMotorId, SparkMax.MotorType.kBrushless);
+	private final SparkMax rightMotor =
+        new SparkMax(kRightMotorId, SparkMax.MotorType.kBrushless);
 	
 	private SysIdRoutine sysidRoutine = new SysIdRoutine(
             new SysIdRoutine.Config(null, Volts.of(4), null, null),
@@ -30,27 +34,24 @@ public class Elevator extends SubsystemBase {
                     rightMotor.setVoltage(driveVoltage.unaryMinus());
                 },
                 (SysIdRoutineLog log) -> {
+                    RelativeEncoder enc = leftMotor.getEncoder();
                     log.motor("elevator-Left")
                         .voltage(Volts.of(leftMotor.get() *
                                     RobotController.getBatteryVoltage()))
-                        .angularPosition(Revolutions.of(leftMotor.getEncoder().getPosition()))
-                        .angularVelocity(RPM.of(leftMotor.getEncoder().getVelocity()));  
+                        .angularPosition(Revolutions.of(enc.getPosition()))
+                        .angularVelocity(RPM.of(enc.getVelocity()));  
                 },
                 this
             )
     );
-    private Encoder boreEncoder = new Encoder(ElevatorConstants.kEncoderChA, ElevatorConstants.kEncoderChB);
+    private Encoder boreEncoder = new Encoder(kEncoderChA, kEncoderChB);
 
 	public Elevator() {
         SparkMaxConfig config = new SparkMaxConfig();
 
         config.idleMode(SparkMaxConfig.IdleMode.kCoast);
-        config.closedLoop
-            .p(ElevatorConstants.kP)
-            .d(ElevatorConstants.kD)
-            .velocityFF(ElevatorConstants.kFF);
-
-        config.encoder.positionConversionFactor(ElevatorConstants.kGearboxRatio);
+        config.closedLoop.pidf(kP, 0, kD, kFF);
+        config.encoder.positionConversionFactor(kGearboxRatio);
 
         leftMotor.configure(config,
             SparkMax.ResetMode.kResetSafeParameters,
@@ -71,10 +72,15 @@ public class Elevator extends SubsystemBase {
 	@Override
 	public void periodic() {
 		// g_pose->UpdateFromWheelPositions(GetWheelPositions());
-		SmartDashboard.putNumber("Drivetrain/Motor/RPM", leftMotor.getEncoder().getVelocity());
-        SmartDashboard.putNumber("Elevator/BoreEncoderValue", boreEncoder.getDistance());
-        SmartDashboard.putNumber("Elevator/NeoEncoderValue", leftMotor.getEncoder().getPosition());
+        SmartDashboard.putNumber("Elevator/BoreEncoderValue",
+            boreEncoder.getDistance());
+        SmartDashboard.putNumber("Elevator/NeoEncoderValue",
+            leftMotor.getEncoder().getPosition());
+        SmartDashboard.putNumber("Elevator/Speed",
+            leftMotor.getEncoder().getVelocity());
 
+        // zero the neo encoder with the bore encoder, seems to help fix
+        // weird drift issues
         if (Math.abs(boreEncoder.getDistance()) < 0.02) {
             leftMotor.getEncoder().setPosition(0);
         }
@@ -86,6 +92,10 @@ public class Elevator extends SubsystemBase {
                     .setReference(turns, SparkMax.ControlType.kPosition);
             }
         );
+    }
+
+    public Command setLevel(int level) {
+        return setPosition(kElevatorLevels[level]);
     }
 
 	public Command sysIdDynamic(SysIdRoutine.Direction direction) {
