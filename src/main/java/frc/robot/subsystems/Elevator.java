@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.Constants.ElevatorConstants;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,38 +22,39 @@ public class Elevator extends SubsystemBase {
 	private SparkMax leftMotor = new SparkMax(ElevatorConstants.kLeftMotorId, SparkMax.MotorType.kBrushless);
 	private SparkMax rightMotor = new SparkMax(ElevatorConstants.kRightMotorId, SparkMax.MotorType.kBrushless);
 	
-	private SysIdRoutine sysidRoutine;
-		
-	public Elevator() {
-        sysidRoutine = new SysIdRoutine(
-                new SysIdRoutine.Config(null, null, Seconds.of(3), null),
-                new SysIdRoutine.Mechanism(
+	private SysIdRoutine sysidRoutine = new SysIdRoutine(
+            new SysIdRoutine.Config(null, Volts.of(4), null, null),
+            new SysIdRoutine.Mechanism(
                 (Voltage driveVoltage) -> {
-                        leftMotor.setVoltage(driveVoltage);
-                        rightMotor.setVoltage(driveVoltage.unaryMinus());
-                    },
-                    (SysIdRoutineLog log) -> {
-                        log.motor("elevator-Left")
-                            .voltage(Volts.of(leftMotor.get() *
-                                        RobotController.getBatteryVoltage()))
-                            .angularPosition(Revolutions.of(leftMotor.getEncoder().getPosition()))
-                            .angularVelocity(RevolutionsPerSecond.of(leftMotor.getEncoder().getVelocity()));  
-                    },
-                    this
-                )
-        );
+                    leftMotor.setVoltage(driveVoltage);
+                    rightMotor.setVoltage(driveVoltage.unaryMinus());
+                },
+                (SysIdRoutineLog log) -> {
+                    log.motor("elevator-Left")
+                        .voltage(Volts.of(leftMotor.get() *
+                                    RobotController.getBatteryVoltage()))
+                        .angularPosition(Revolutions.of(leftMotor.getEncoder().getPosition()))
+                        .angularVelocity(RPM.of(leftMotor.getEncoder().getVelocity()));  
+                },
+                this
+            )
+    );
+    private Encoder boreEncoder = new Encoder(ElevatorConstants.kEncoderChA, ElevatorConstants.kEncoderChB);
 
+	public Elevator() {
         SparkMaxConfig config = new SparkMaxConfig();
+
         config.idleMode(SparkMaxConfig.IdleMode.kCoast);
         config.closedLoop
             .p(ElevatorConstants.kP)
             .d(ElevatorConstants.kD)
             .velocityFF(ElevatorConstants.kFF);
 
-        config.softLimit.forwardSoftLimitEnabled(true);
-        config.softLimit.reverseSoftLimitEnabled(false);
-        config.softLimit.forwardSoftLimit(0);
-        //config.softLimit.ReverseSoftLimit(-ElevatorConstants::kTopLimitSpinCount);
+        config.encoder.positionConversionFactor(ElevatorConstants.kGearboxRatio);
+
+        leftMotor.configure(config,
+            SparkMax.ResetMode.kResetSafeParameters,
+            SparkMax.PersistMode.kPersistParameters);
 
         config.follow(leftMotor, true);
 
@@ -60,33 +62,28 @@ public class Elevator extends SubsystemBase {
             SparkMax.ResetMode.kResetSafeParameters,
             SparkMax.PersistMode.kPersistParameters);
     
-
-        config.softLimit.reverseSoftLimitEnabled(true);
-        config.softLimit.forwardSoftLimitEnabled(false);
-
-        config.softLimit.reverseSoftLimit(0);
-        //config.softLimit.ForwardSoftLimit(ElevatorConstants::kTopLimitSpinCount);
-
-        leftMotor.configure(config,
-            SparkMax.ResetMode.kResetSafeParameters,
-            SparkMax.PersistMode.kPersistParameters);
+        // rev bore encoder
+        boreEncoder.setDistancePerPulse(1./2048.);
+        boreEncoder.setSamplesToAverage(5);
+        boreEncoder.setReverseDirection(true);
     }
 
 	@Override
 	public void periodic() {
 		// g_pose->UpdateFromWheelPositions(GetWheelPositions());
 		SmartDashboard.putNumber("Drivetrain/Motor/RPM", leftMotor.getEncoder().getVelocity());
+        SmartDashboard.putNumber("Elevator/BoreEncoderValue", boreEncoder.getDistance());
+        SmartDashboard.putNumber("Elevator/NeoEncoderValue", leftMotor.getEncoder().getPosition());
+
+        if (Math.abs(boreEncoder.getDistance()) < 0.02) {
+            leftMotor.getEncoder().setPosition(0);
+        }
 	}
  
     public Command setPosition(double turns) {
-        return Commands.startEnd(() -> {
+        return Commands.runOnce(() -> {
                 leftMotor.getClosedLoopController()
-                    .setReference(turns + SmartDashboard.getNumber("Elevator/Compensation", 0), SparkMax.ControlType.kPosition);
-            },
-            () -> {
-                // leftMotor.getClosedLoopController()
-                //    .setReference(0, SparkMax.ControlType.kPosition);
-                leftMotor.set(0);
+                    .setReference(turns, SparkMax.ControlType.kPosition);
             }
         );
     }
