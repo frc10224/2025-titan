@@ -15,10 +15,7 @@ import edu.wpi.first.wpilibj.RobotController;
 
 import java.util.function.DoubleSupplier;
 
-import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Revolutions;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.*;
 
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.SparkBase.*;
@@ -121,22 +118,41 @@ public class Drivetrain extends SubsystemBase {
 			double xSpeed = XSpeed.getAsDouble();
 			double ySpeed = YSpeed.getAsDouble();
 			double zRotate = ZRotate.getAsDouble();
-	
+		
+			if (Math.abs(xSpeed) < DrivetrainConstants.kControllerDeadzone)
+				xSpeed = 0;
+			else 
+				xSpeed -= Math.signum(xSpeed) * DrivetrainConstants.kControllerDeadzone;
+
+			if (Math.abs(ySpeed) < DrivetrainConstants.kControllerDeadzone) 
+				ySpeed = 0;
+			else
+				ySpeed -= Math.signum(ySpeed) * DrivetrainConstants.kControllerDeadzone;
+
+			if (Math.abs(zRotate) < DrivetrainConstants.kControllerDeadzone)
+				zRotate = 0;
+			else 
+				zRotate -= Math.signum(zRotate) * DrivetrainConstants.kControllerDeadzone;
+
+			xSpeed /= 1. - DrivetrainConstants.kControllerDeadzone;
+			ySpeed /= 1. - DrivetrainConstants.kControllerDeadzone;
+			zRotate /= 1. - DrivetrainConstants.kControllerDeadzone;
+
 			xSpeed *= DrivetrainConstants.kMaxDriveSpeed;
 			ySpeed *= DrivetrainConstants.kMaxDriveSpeed;
 			zRotate *= DrivetrainConstants.kMaxTurnSpeed;
-	
-			if (xSpeed <= 0.1) xSpeed = 0;
-			if (xSpeed <= 0.1) xSpeed = 0;
-			if (xSpeed <= 0.1) xSpeed = 0;
-	
+
+			xSpeed = Math.pow(xSpeed, 3);
+			ySpeed = Math.pow(ySpeed, 3);
+			zRotate = Math.pow(zRotate, 3);
+
 			MecanumDrive.WheelSpeeds ws =
 				MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate/*, g_pose->GyroAngle()*/);
-							
-			motorLf.setVelocity(-ws.frontLeft);
-			motorRf.setVelocity(ws.frontRight);
-			motorLb.setVelocity(-ws.rearLeft);
-			motorRb.setVelocity(ws.rearRight);
+
+			motorLf.setVelocity(-ws.frontLeft * DrivetrainConstants.kMaxRPM);
+			motorRf.setVelocity(ws.frontRight * DrivetrainConstants.kMaxRPM);
+			motorLb.setVelocity(-ws.rearLeft * DrivetrainConstants.kMaxRPM);
+			motorRb.setVelocity(ws.rearRight * DrivetrainConstants.kMaxRPM);
 		}, this);
 	}
 

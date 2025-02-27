@@ -6,14 +6,15 @@ import edu.wpi.first.units.measure.Distance;
 
 public class Constants {
     public static final class DrivetrainConstants {
-        public static final double kMaxDriveSpeed = 1;
-        public static final double kMaxTurnSpeed = 1;
+        public static final double kMaxDriveSpeed = 0.6;
+        public static final double kMaxTurnSpeed = 0.1;
         public static final double kGearRatio = 1/5.71;
         public static final Distance kWheelRadius = Inches.of(2);
         public static final double kP = 0.0000026155;
         public static final double kI = 0;
         public static final double kD = 0;
         public static final double kVelocityFF = 0.11911;
+        public static final double kControllerDeadzone = 0.02;
         // Max power RPM
         public static final double kMaxRPM = 2900;
         // CAN bus IDs
@@ -36,10 +37,16 @@ public class Constants {
     public static final class ElevatorConstants {
         public static final int kLeftMotorId = 6;
         public static final int kRightMotorId = 5;
-        public static final double kP = 0.086188;
+        public static final double kP = 0.5; // 0.086188;
         public static final double kD = 0.92;
-        public static final double kFF = 0.12367;
+        public static final double kFF = 0.0869;   
         public static final double kTopLimitSpinCount = 89;
+        public static final int kEncoderChA = 8;
+        public static final int kEncoderChB = 9; 
+        public static final double kGearboxRatio = 1./20.;
+        public static final double kLevel1Position = 0.40;
+        public static final double kLevel2Position = 1.65;
+        public static final double kLevel3Position = 3.75;
     }
 
     public static final class CoralConstants {
