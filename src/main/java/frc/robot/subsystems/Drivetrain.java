@@ -140,6 +140,9 @@ public class Drivetrain extends SubsystemBase {
 			ySpeed /= 1. - kControllerDeadzone;
 			zRotate /= 1. - kControllerDeadzone;
 
+			if (Math.abs(ySpeed) > Math.abs(xSpeed))
+				xSpeed = 0;
+			
 			// scale factors
 			xSpeed *= kMaxDriveSpeed;
 			ySpeed *= kMaxDriveSpeed;
@@ -155,10 +158,10 @@ public class Drivetrain extends SubsystemBase {
 			MecanumDrive.WheelSpeeds ws =
 				MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate);
 
-			motorLf.setVelocity(-ws.frontLeft * kMaxRPM);
-			motorRf.setVelocity(ws.frontRight * kMaxRPM);
-			motorLb.setVelocity(-ws.rearLeft * kMaxRPM);
-			motorRb.setVelocity(ws.rearRight * kMaxRPM);
+			motorLf.setVoltage(Volts.of(-ws.frontLeft * RobotController.getBatteryVoltage()));
+			motorRf.setVoltage(Volts.of(ws.frontRight * RobotController.getBatteryVoltage()));
+			motorLb.setVoltage(Volts.of(-ws.rearLeft * RobotController.getBatteryVoltage()));
+			motorRb.setVoltage(Volts.of(ws.rearRight * RobotController.getBatteryVoltage()));
 		}, this);
 	}
 

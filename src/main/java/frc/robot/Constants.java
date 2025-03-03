@@ -6,14 +6,14 @@ import edu.wpi.first.units.measure.Distance;
 
 public final class Constants {
 	public static final class DrivetrainConstants {
-		public static final double kMaxDriveSpeed = 0.6;
-		public static final double kMaxTurnSpeed = 0.1;
+		public static final double kMaxDriveSpeed = 1;
+		public static final double kMaxTurnSpeed = 0.8;
 		public static final double kGearRatio = 1/5.71;
 		public static final Distance kWheelRadius = Inches.of(2);
 		public static final double kP = 0.0000026155;
 		public static final double kD = 0;
 		public static final double kFF = 0.11911;
-		public static final double kControllerDeadzone = 0.02;
+		public static final double kControllerDeadzone = 0.05;
 		// Max power RPM
 		public static final double kMaxRPM = 2900;
 		// CAN bus IDs
@@ -43,7 +43,9 @@ public final class Constants {
 		public static final int kEncoderChA = 8;
 		public static final int kEncoderChB = 9; 
 		public static final double kGearboxRatio = 1./20.;
-		public static final double[] kElevatorLevels = { 0, 0.4, 1.65, 3.75 };
+		public static final double[] kElevatorLevels = { 0, 0.65, 1.86, 3.78 };
+		public static final double kAlgaeHeight2 = 3.05;
+		public static final double kAlgaeHeight1 = 1.85;
 	}
 
 	public static final class CoralConstants {
@@ -53,6 +55,11 @@ public final class Constants {
 		public static final double kD = 0;
 		public static final double kFF = 0.0003;
 		public static final int kLaserCanId = 9;
+	}
+
+	public static final class AlgaeConstants {
+		public static final int kLeftMotorId = 9;
+		public static final int kRightMotorId = 10;
 	}
 }
 
