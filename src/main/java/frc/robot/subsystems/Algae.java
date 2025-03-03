@@ -9,11 +9,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import static frc.robot.Constants.AlgaeConstants.*;
 
-// TODO: fix the issue where the coral falls out of the coral box. i reckon
-// this may involve doing something where when we stop it we use pid to set
-// a **position setpoint** so that it does not move, and if it does it will
-// move the coral back into the box
-
 public class Algae extends SubsystemBase {
 	private final SparkMax leftMotor =
 		new SparkMax(LEFT_MOTOR_ID, SparkMax.MotorType.kBrushless);
