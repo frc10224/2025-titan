@@ -10,9 +10,9 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends TimedRobot {
 	// this gets populated by the dashboard picker ideally
-	private Command autoCommand;
 	private final RobotContainer container = new RobotContainer();
 	private final Command teleopCommand = container.getTeleopCommand();
+	private final Command autoCommand = container.getAutonomousCommand();
 
 	public Robot() {}
 
@@ -33,8 +33,6 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void autonomousInit() {
-		autoCommand = container.getAutonomousCommand();
-
 		if (teleopCommand != null)
 			teleopCommand.cancel();
 
@@ -48,7 +46,8 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void teleopInit() {
-		if (autoCommand != null) autoCommand.cancel();
+		if (autoCommand != null)
+			autoCommand.cancel();
 
 		if (teleopCommand != null) 
 			teleopCommand.schedule();
