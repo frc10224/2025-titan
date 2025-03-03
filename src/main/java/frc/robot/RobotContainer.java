@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.subsystems.*;
@@ -39,11 +40,9 @@ public class RobotContainer {
 	}
 
 	public Command getAutonomousCommand() {
-		return drivetrain.ControllerDrive(
-			() -> { return 1; },
-			() -> { return 0; },
-			() -> { return 0; }
-		);
+		return Commands.runEnd(
+			() -> drivetrain.SetVelocity(1, 0, 0),
+			() -> drivetrain.SetVelocity(0, 0, 0));
 	}
 
 	public Command getTeleopCommand() {
