@@ -5,7 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.subsystems.*;
@@ -21,14 +20,7 @@ public class RobotContainer {
 
 	public RobotContainer() {
 		// set controller binds
-		// XXX: should this be on an operator controller?
-		driver.a().whileTrue(coral.collect());
-		driver.b().whileTrue(coral.spit());
-		driver.x().whileTrue(coral.slurp());
-		driver.rightTrigger().onTrue(elevator.setLevel(0));
-		driver.rightBumper().onTrue(elevator.setLevel(1));
-		driver.leftTrigger().onTrue(elevator.setLevel(2));
-		driver.leftBumper().onTrue(elevator.setLevel(3));
+		driver.rightTrigger().whileTrue(drivetrain.lineupL4());
 
 		operator.povLeft().whileTrue(algae.collect());
 		operator.povRight().whileTrue(algae.spit());
@@ -47,7 +39,7 @@ public class RobotContainer {
 	}
 
 	public Command getAutonomousCommand() {
-		return drivetrain.MecanumDrive(
+		return drivetrain.ControllerDrive(
 			() -> { return 1; },
 			() -> { return 0; },
 			() -> { return 0; }
@@ -55,7 +47,7 @@ public class RobotContainer {
 	}
 
 	public Command getTeleopCommand() {
-		return drivetrain.MecanumDrive(
+		return drivetrain.ControllerDrive(
 			() -> { return -driver.getLeftY(); },
 			() -> { return driver.getLeftX(); },
 			() -> { return driver.getRightX(); }

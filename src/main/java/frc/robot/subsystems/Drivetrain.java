@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
@@ -19,6 +20,8 @@ import com.revrobotics.spark.*;
 import com.revrobotics.spark.SparkBase.*;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import au.grapplerobotics.LaserCan;
+
 import static frc.robot.Constants.DrivetrainConstants.*;
 
 class DriveMotor {
@@ -34,13 +37,9 @@ class DriveMotor {
 
 			// PID should stop fine for us
 			config.idleMode(SparkMaxConfig.IdleMode.kCoast);
-
 			config.smartCurrentLimit(30);
-			
 			config.closedLoop.pidf(KP, 0, KD, KFF);
-			
 			config.encoder.positionConversionFactor(1);
-
 			motor.configure(config,
 				SparkMax.ResetMode.kResetSafeParameters,
 				// if the controller power cycles we want it to remember these
@@ -63,6 +62,7 @@ class DriveMotor {
 		void setVoltage(Voltage voltage) {
 				motor.setVoltage(voltage);
 		}
+
 		AngularVelocity getEncoderVelocity() {
 				return RPM.of(encoder.getVelocity());
 		}
@@ -80,6 +80,14 @@ public class Drivetrain extends SubsystemBase {
 	private final DriveMotor motorLb = new DriveMotor(MOTORID_LB);
 	private final DriveMotor motorRf = new DriveMotor(MOTORID_RF);
 	private final DriveMotor motorRb = new DriveMotor(MOTORID_RB); 
+
+	// sometimes we need to suspend stick input so we can drive with code
+	private boolean pauseController = false;
+
+	// ranging for coral
+	private final LaserCan laser = new LaserCan(LASERCAN_ID);
+	private final PIDController rangeController =
+		new PIDController(RANGEDIST_P, 0, RANGEDIST_D);
 	
 	private final SysIdRoutine sysidRoutine = new SysIdRoutine(
 		new SysIdRoutine.Config(null, null, Seconds.of(3), null),
@@ -100,16 +108,29 @@ public class Drivetrain extends SubsystemBase {
 		)
 	);
 		
-	public Drivetrain() {}
+	public Drivetrain() {
+		rangeController.setSetpoint(L4_DISTANCE.in(Millimeters));
+	}
 
 	@Override
 	public void periodic() {
 		// TODO: odometry updating stuff
 	}
 
-	public Command MecanumDrive(DoubleSupplier XSpeed, DoubleSupplier YSpeed,
+	public void SetVelocity(double xSpeed, double ySpeed, double zRotate) {
+		MecanumDrive.WheelSpeeds ws =
+			MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate);
+		motorLf.setVelocity(ws.frontLeft);
+		motorLb.setVelocity(ws.rearLeft);
+		motorRf.setVelocity(ws.frontRight);
+		motorRb.setVelocity(ws.rearRight);
+	}
+
+	public Command ControllerDrive(DoubleSupplier XSpeed, DoubleSupplier YSpeed,
 			DoubleSupplier ZRotate) {
 		return Commands.run(() -> {
+			if (pauseController) return;
+
 			double xSpeed = XSpeed.getAsDouble();
 			double ySpeed = YSpeed.getAsDouble();
 			double zRotate = ZRotate.getAsDouble();
@@ -173,6 +194,19 @@ public class Drivetrain extends SubsystemBase {
 			motorRb.getWheelDistance()
 		);
 	}
+
+	public Command lineupL4() {
+		return Commands.runEnd(() -> {
+			pauseController = true;
+			double mm = laser.getMeasurement().distance_mm;
+			double pid_output = rangeController.calculate(mm);
+			SetVelocity(pid_output, 0, 0);
+		}, () -> {
+			pauseController = false;
+			SetVelocity(0, 0, 0);
+		}, this);
+	}
+
 	public Command SysIdDynamic(Direction direction) {
 		return sysidRoutine.dynamic(direction);
 	}

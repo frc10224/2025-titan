@@ -25,6 +25,11 @@ public final class Constants {
 		public static final Translation2d WHEELLOC_FR = new Translation2d(0.381, 11);
 		public static final Translation2d WHEELLOC_BL = new Translation2d(-0.381, 0.381);
 		public static final Translation2d WHEELLOC_BR = new Translation2d(-0.381, -0.381);
+		// for the L4 distance auto
+		public static final int LASERCAN_ID = 11;
+		public static final double RANGEDIST_P = 0.0001;
+		public static final double RANGEDIST_D = 1;
+		public static final Distance L4_DISTANCE = Centimeters.of(8);
 	};
 
 	public static final class PoseConstants { 
