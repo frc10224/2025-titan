@@ -6,25 +6,25 @@ import edu.wpi.first.units.measure.Distance;
 
 public final class Constants {
 	public static final class DrivetrainConstants {
-		public static final double kMaxDriveSpeed = 1;
-		public static final double kMaxTurnSpeed = 0.8;
-		public static final double kGearRatio = 1/5.71;
-		public static final Distance kWheelRadius = Inches.of(2);
-		public static final double kP = 0.0000026155;
-		public static final double kD = 0;
-		public static final double kFF = 0.11911;
-		public static final double kControllerDeadzone = 0.05;
+		public static final double MAX_DRIVE_SPEED = 1;
+		public static final double MAX_TURN_SPEED = 0.8;
+		public static final double GEAR_RATIO = 1/5.71;
+		public static final Distance WHEEL_RADIUS = Inches.of(2);
+		public static final double KP = 0.0000026155;
+		public static final double KD = 0;
+		public static final double KFF = 0.11911;
+		public static final double CONTROLLER_DEADZONE = 0.05;
 		// Max power RPM
-		public static final double kMaxRPM = 2900;
+		public static final double MAX_RPM = 2900;
 		// CAN bus IDs
-		public static final int kMotorId_LB = 2;
-		public static final int kMotorId_LF = 1;
-		public static final int kMotorId_RF = 3;
-		public static final int kMotorId_RB = 4;
-		public static final Translation2d kFrontLeftLocation = new Translation2d(0.381, 11);
-		public static final Translation2d kFrontRightLocation = new Translation2d(0.381, 11);
-		public static final Translation2d kBackLeftLocation = new Translation2d(-0.381, 0.381);
-		public static final Translation2d kBackRightLocation = new Translation2d(-0.381, -0.381);
+		public static final int MOTORID_LB = 2;
+		public static final int MOTORID_LF = 1;
+		public static final int MOTORID_RF = 3;
+		public static final int MOTORID_RB = 4;
+		public static final Translation2d WHEELLOC_FL = new Translation2d(0.381, 11);
+		public static final Translation2d WHEELLOC_FR = new Translation2d(0.381, 11);
+		public static final Translation2d WHEELLOC_BL = new Translation2d(-0.381, 0.381);
+		public static final Translation2d WHEELLOC_BR = new Translation2d(-0.381, -0.381);
 	};
 
 	public static final class PoseConstants { 
@@ -34,32 +34,32 @@ public final class Constants {
 	}
 
 	public static final class ElevatorConstants {
-		public static final int kLeftMotorId = 6;
-		public static final int kRightMotorId = 5;
-		public static final double kP = 0.5; // 0.086188;
-		public static final double kD = 0.92;
-		public static final double kFF = 0.0869;   
-		public static final double kTopLimitSpinCount = 89;
-		public static final int kEncoderChA = 8;
-		public static final int kEncoderChB = 9; 
-		public static final double kGearboxRatio = 1./20.;
-		public static final double[] kElevatorLevels = { 0, 0.65, 1.86, 3.78 };
-		public static final double kAlgaeHeight2 = 3.05;
-		public static final double kAlgaeHeight1 = 1.85;
+		public static final int LEFT_MOTOR_ID = 6;
+		public static final int RIGHT_MOTOR_ID = 5;
+		public static final double KP = 0.5; // 0.086188;
+		public static final double KD = 0.92;
+		public static final double KFF = 0.0869;   
+		public static final double TOP_LIMIT_SPIN_COUNT = 89;
+		public static final int ENCODER_CH_A = 8;
+		public static final int ENCODER_CH_B = 9; 
+		public static final double GEARBOX_RATIO = 1./20.;
+		public static final double[] ELEVATOR_LEVELS = { 0, 0.65, 1.86, 3.78 };
+		public static final double L3_ALGAE_HEIGHT = 3.05;
+		public static final double L2_ALGAE_HEIGHT = 1.85;
 	}
 
 	public static final class CoralConstants {
-		public static final int kLeftMotorId = 7;
-		public static final int kRightMotorId = 8;
-		public static final double kP = 0.0001;
-		public static final double kD = 0;
-		public static final double kFF = 0.0003;
-		public static final int kLaserCanId = 9;
+		public static final int LEFT_MOTOR_ID = 7;
+		public static final int RIGHT_MOTOR_ID = 8;
+		public static final double KP = 0.0001;
+		public static final double KD = 0;
+		public static final double KFF = 0.0003;
+		public static final int LASERCAN_ID = 9;
 	}
 
 	public static final class AlgaeConstants {
-		public static final int kLeftMotorId = 9;
-		public static final int kRightMotorId = 10;
+		public static final int LEFT_MOTOR_ID = 9;
+		public static final int RIGHT_MOTOR_ID = 10;
 	}
 }
 

@@ -16,10 +16,10 @@ import static frc.robot.Constants.AlgaeConstants.*;
 
 public class Algae extends SubsystemBase {
 	private final SparkMax leftMotor =
-		new SparkMax(kLeftMotorId, SparkMax.MotorType.kBrushless);
+		new SparkMax(LEFT_MOTOR_ID, SparkMax.MotorType.kBrushless);
 		
 	private final SparkMax rightMotor =
-		new SparkMax(kRightMotorId, SparkMax.MotorType.kBrushless);
+		new SparkMax(RIGHT_MOTOR_ID, SparkMax.MotorType.kBrushless);
 	
 	public Algae() {
 		SparkMaxConfig config = new SparkMaxConfig();

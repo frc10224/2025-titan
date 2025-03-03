@@ -22,9 +22,9 @@ import static frc.robot.Constants.ElevatorConstants.*;
 
 public class Elevator extends SubsystemBase {
 	private final SparkMax leftMotor =
-		new SparkMax(kLeftMotorId, SparkMax.MotorType.kBrushless);
+		new SparkMax(LEFT_MOTOR_ID, SparkMax.MotorType.kBrushless);
 	private final SparkMax rightMotor =
-		new SparkMax(kRightMotorId, SparkMax.MotorType.kBrushless);
+		new SparkMax(RIGHT_MOTOR_ID, SparkMax.MotorType.kBrushless);
 
 	private double setpoint = 0;
 	
@@ -46,7 +46,7 @@ public class Elevator extends SubsystemBase {
 				this
 			)
 	);
-	private Encoder boreEncoder = new Encoder(kEncoderChA, kEncoderChB);
+	private Encoder boreEncoder = new Encoder(ENCODER_CH_A, ENCODER_CH_B);
 
 	private double currentLimitTime = 0.0;
 
@@ -54,8 +54,8 @@ public class Elevator extends SubsystemBase {
 		SparkMaxConfig config = new SparkMaxConfig();
 
 		config.idleMode(SparkMaxConfig.IdleMode.kCoast);
-		config.closedLoop.pidf(kP, 0, kD, kFF);
-		config.encoder.positionConversionFactor(kGearboxRatio);
+		config.closedLoop.pidf(KP, 0, KD, KFF);
+		config.encoder.positionConversionFactor(GEARBOX_RATIO);
 
 		config.smartCurrentLimit(40);
 
@@ -127,7 +127,7 @@ public class Elevator extends SubsystemBase {
 	}
 
 	public Command setLevel(int level) {
-		return setPosition(kElevatorLevels[level]);
+		return setPosition(ELEVATOR_LEVELS[level]);
 	}
 
 	public Command sysIdDynamic(SysIdRoutine.Direction direction) {
