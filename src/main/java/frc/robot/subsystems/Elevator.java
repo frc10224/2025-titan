@@ -25,6 +25,8 @@ public class Elevator extends SubsystemBase {
 		new SparkMax(kLeftMotorId, SparkMax.MotorType.kBrushless);
 	private final SparkMax rightMotor =
 		new SparkMax(kRightMotorId, SparkMax.MotorType.kBrushless);
+
+	private double setpoint = 0;
 	
 	private SysIdRoutine sysidRoutine = new SysIdRoutine(
 			new SysIdRoutine.Config(null, Volts.of(4), null, null),
@@ -46,12 +48,16 @@ public class Elevator extends SubsystemBase {
 	);
 	private Encoder boreEncoder = new Encoder(kEncoderChA, kEncoderChB);
 
+	private double currentLimitTime = 0.0;
+
 	public Elevator() {
 		SparkMaxConfig config = new SparkMaxConfig();
 
 		config.idleMode(SparkMaxConfig.IdleMode.kCoast);
 		config.closedLoop.pidf(kP, 0, kD, kFF);
 		config.encoder.positionConversionFactor(kGearboxRatio);
+
+		config.smartCurrentLimit(40);
 
 		leftMotor.configure(config,
 			SparkMax.ResetMode.kResetSafeParameters,
@@ -78,6 +84,11 @@ public class Elevator extends SubsystemBase {
 			leftMotor.getEncoder().getPosition());
 		SmartDashboard.putNumber("Elevator/Speed",
 			leftMotor.getEncoder().getVelocity());
+		SmartDashboard.putNumber("Elevator/MotorCurrent",
+			leftMotor.getOutputCurrent());
+		SmartDashboard.putNumber("Elevator/setpoint", setpoint);
+
+		SmartDashboard.putNumber("Elevator/CurrentLimitTime", currentLimitTime);
 
 		// zero the neo encoder with the bore encoder, seems to help fix
 		// weird drift issues
@@ -88,8 +99,29 @@ public class Elevator extends SubsystemBase {
  
 	public Command setPosition(double turns) {
 		return Commands.runOnce(() -> {
+				setpoint = turns;
 				leftMotor.getClosedLoopController()
 					.setReference(turns, SparkMax.ControlType.kPosition);
+			}
+		);
+	}
+
+	public Command zero() {
+		return Commands.startEnd(
+			() -> { leftMotor.set(-0.05); },
+			() -> {
+				leftMotor.set(0);
+				leftMotor.getEncoder().setPosition(0);
+				boreEncoder.reset();
+			}
+		);
+	}
+
+	public Command adjustHeight(double turns) {
+		return Commands.runOnce(() -> {
+			setpoint += turns;
+			leftMotor.getClosedLoopController()
+				.setReference(setpoint, SparkMax.ControlType.kPosition);
 			}
 		);
 	}
