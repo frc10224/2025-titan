@@ -27,13 +27,13 @@ import static frc.robot.Constants.CoralConstants.*;
 
 public class Coral extends SubsystemBase {
 	private SparkMax leftMotor =
-		new SparkMax(LEFT_MOTOR_ID, SparkMax.MotorType.kBrushless);
+		new SparkMax(kLeftMotorId, SparkMax.MotorType.kBrushless);
 		
 	private SparkMax rightMotor =
-		new SparkMax(RIGHT_MOTOR_ID, SparkMax.MotorType.kBrushless);
+		new SparkMax(kRightMotorId, SparkMax.MotorType.kBrushless);
 	
 	private SysIdRoutine sysidRoutine;
-	private LaserCan laser = new LaserCan(LASERCAN_ID);
+	private LaserCan laser = new LaserCan(kLaserCanId);
 
 	private int laserDist = 9999999; 
 
@@ -59,7 +59,7 @@ public class Coral extends SubsystemBase {
 
 		SparkMaxConfig config = new SparkMaxConfig();
 		config.idleMode(SparkMaxConfig.IdleMode.kBrake);
-		config.closedLoop.pidf(KP, 0, KD, KFF);
+		config.closedLoop.pidf(kP, 0, kD, kFF);
 
 		leftMotor.configure(config,
 			SparkMax.ResetMode.kResetSafeParameters,

@@ -25,8 +25,8 @@ public class RobotContainer {
 
 		operator.povLeft().whileTrue(algae.collect());
 		operator.povRight().whileTrue(algae.spit());
-		operator.povDown().onTrue(elevator.setPosition(ElevatorConstants.L2_ALGAE_HEIGHT));
-		operator.povUp().onTrue(elevator.setPosition(ElevatorConstants.L3_ALGAE_HEIGHT));
+		operator.povDown().onTrue(elevator.setPosition(ElevatorConstants.kAlgaeHeight1));
+		operator.povUp().onTrue(elevator.setPosition(ElevatorConstants.kAlgaeHeight2));
 
 		operator.a().whileTrue(coral.collect());
 		operator.b().whileTrue(coral.spit());

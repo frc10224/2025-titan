@@ -38,7 +38,7 @@ class DriveMotor {
 			// PID should stop fine for us
 			config.idleMode(SparkMaxConfig.IdleMode.kCoast);
 			config.smartCurrentLimit(30);
-			config.closedLoop.pidf(KP, 0, KD, KFF);
+			config.closedLoop.pidf(kP, 0, kD, kFF);
 			config.encoder.positionConversionFactor(1);
 			motor.configure(config,
 				SparkMax.ResetMode.kResetSafeParameters,
@@ -48,14 +48,14 @@ class DriveMotor {
 		}
 		
 		Distance getWheelDistance() {
-			return WHEEL_RADIUS
-				.times(GEAR_RATIO)
+			return kWheelRadius
+				.times(kGearRatio)
 				.times(motor.getEncoder().getPosition());
 		}
 
 		/// Set the target motor percentage, (attempting to) keep RPM constant
 		void setVelocity(double percent) {
-				pid.setReference(percent * MAX_RPM, ControlType.kVelocity);
+				pid.setReference(percent * kMaxRPM, ControlType.kVelocity);
 		}
 
 		/// Set the target motor voltage
@@ -76,19 +76,19 @@ class DriveMotor {
 };
 
 public class Drivetrain extends SubsystemBase {
-	private final DriveMotor motorLf = new DriveMotor(MOTORID_LF);
-	private final DriveMotor motorLb = new DriveMotor(MOTORID_LB);
-	private final DriveMotor motorRf = new DriveMotor(MOTORID_RF);
-	private final DriveMotor motorRb = new DriveMotor(MOTORID_RB); 
+	private final DriveMotor motorLf = new DriveMotor(kMotorId_LF);
+	private final DriveMotor motorLb = new DriveMotor(kMotorId_LB);
+	private final DriveMotor motorRf = new DriveMotor(kMotorId_RF);
+	private final DriveMotor motorRb = new DriveMotor(kMotorId_RB); 
 
 	// sometimes we need to suspend stick input so we can drive with code
 	private boolean pauseController = false;
 
 	// ranging for coral
-	private final LaserCan laser = new LaserCan(LASERCAN_ID);
+	private final LaserCan laser = new LaserCan(kLaserCanId);
 	private final PIDController rangeController =
-		new PIDController(RANGEDIST_P, 0, RANGEDIST_D);
-	
+		new PIDController(kLaserDriveP, 0, kLaserDriveD);
+
 	private final SysIdRoutine sysidRoutine = new SysIdRoutine(
 		new SysIdRoutine.Config(null, null, Seconds.of(3), null),
 		new SysIdRoutine.Mechanism(
@@ -109,7 +109,7 @@ public class Drivetrain extends SubsystemBase {
 	);
 		
 	public Drivetrain() {
-		rangeController.setSetpoint(L4_DISTANCE.in(Millimeters));
+		rangeController.setSetpoint(kL4ScoringDistance.in(Millimeters));
 	}
 
 	@Override
@@ -145,29 +145,29 @@ public class Drivetrain extends SubsystemBase {
 			// becomes
 			// 0.0 ==================== 0.85
 		
-			if (Math.abs(xSpeed) < CONTROLLER_DEADZONE) xSpeed = 0;
-			else xSpeed -= Math.signum(xSpeed) * CONTROLLER_DEADZONE;
+			if (Math.abs(xSpeed) < kControllerDeadzone) xSpeed = 0;
+			else xSpeed -= Math.signum(xSpeed) * kControllerDeadzone;
 
-			if (Math.abs(ySpeed) < CONTROLLER_DEADZONE) ySpeed = 0;
-			else ySpeed -= Math.signum(ySpeed) * CONTROLLER_DEADZONE;
+			if (Math.abs(ySpeed) < kControllerDeadzone) ySpeed = 0;
+			else ySpeed -= Math.signum(ySpeed) * kControllerDeadzone;
 
-			if (Math.abs(zRotate) < CONTROLLER_DEADZONE) zRotate = 0;
-			else zRotate -= Math.signum(zRotate) * CONTROLLER_DEADZONE;
+			if (Math.abs(zRotate) < kControllerDeadzone) zRotate = 0;
+			else zRotate -= Math.signum(zRotate) * kControllerDeadzone;
 			
 			// now that we are operating in that range we want from 0 to 
 			// 1 - deadzone we can scale it back up so we are back to the
 			// range 0 to 1
-			xSpeed /= 1. - CONTROLLER_DEADZONE;
-			ySpeed /= 1. - CONTROLLER_DEADZONE;
-			zRotate /= 1. - CONTROLLER_DEADZONE;
+			xSpeed /= 1. - kControllerDeadzone;
+			ySpeed /= 1. - kControllerDeadzone;
+			zRotate /= 1. - kControllerDeadzone;
 
 			if (Math.abs(ySpeed) > Math.abs(xSpeed))
 				xSpeed = 0;
 			
 			// scale factors
-			xSpeed *= MAX_DRIVE_SPEED;
-			ySpeed *= MAX_DRIVE_SPEED;
-			zRotate *= MAX_TURN_SPEED;
+			xSpeed *= kMaxDriveSpeed;
+			ySpeed *= kMaxDriveSpeed;
+			zRotate *= kMaxTurnSpeed;
 
 			// curve
 			xSpeed = Math.pow(xSpeed, 3);
