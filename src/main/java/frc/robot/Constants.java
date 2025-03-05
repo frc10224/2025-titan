@@ -34,7 +34,7 @@ public final class Constants {
 
 	public static final class PoseConstants { 
 		// TODO: fix these!
-		public static final Transform3d kCameraLocation = new Transform3d(
+		public static final Transform3d kFrontCameraLocation = new Transform3d(
 			new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
 	}
 
