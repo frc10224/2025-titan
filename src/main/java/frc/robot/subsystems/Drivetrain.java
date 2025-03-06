@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Pose;
 import edu.wpi.first.wpilibj.RobotController;
 
 import static edu.wpi.first.units.Units.*;
@@ -114,7 +115,7 @@ public class Drivetrain extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-		// TODO: odometry updating stuff
+		Pose.getInstance().updateWheelPositions(getWheelPositions());
 	}
 
 	public void SetVelocity(double xSpeed, double ySpeed, double zRotate) {
@@ -186,7 +187,7 @@ public class Drivetrain extends SubsystemBase {
 		}, this);
 	}
 
-	MecanumDriveWheelPositions GetWheelPositions() {
+	public MecanumDriveWheelPositions getWheelPositions() {
 		return new MecanumDriveWheelPositions(
 			motorLf.getWheelDistance(),
 			motorRf.getWheelDistance(),

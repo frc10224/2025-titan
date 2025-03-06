@@ -9,10 +9,21 @@ import com.studica.frc.AHRS;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.estimator.MecanumDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
+import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
+import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 
+import static frc.robot.Constants.DrivetrainConstants.kBackLeftLocation;
+import static frc.robot.Constants.DrivetrainConstants.kBackRightLocation;
+import static frc.robot.Constants.DrivetrainConstants.kFrontLeftLocation;
+import static frc.robot.Constants.DrivetrainConstants.kFrontRightLocation;
 import static frc.robot.Constants.PoseConstants.*;
 
 // this may not be a "subsystem" but it does contain a lot of things that
@@ -22,31 +33,56 @@ public final class Pose {
     private static final Pose instance = new Pose();
     public static Pose getInstance() { return instance; }
 
-    PhotonCamera frontCamera = new PhotonCamera("front");
-    PhotonCamera backCamera = new PhotonCamera("back");
+    /* private PhotonCamera[] activeCameras = {
+        new PhotonCamera("front"),
+        new PhotonCamera("back")
+    }; */
+    private PhotonCamera camera = new PhotonCamera("front");
     
-    Pose3d poseEstimate = null;
-    AHRS navx = new AHRS(AHRS.NavXComType.kMXP_SPI); 
+    private Pose3d visionEstimate = null;
+    private AHRS navx = new AHRS(AHRS.NavXComType.kMXP_SPI); 
     AprilTagFieldLayout tagLayout = 
         AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
     StructPublisher<Pose3d> posePublisher = NetworkTableInstance.getDefault()
         .getStructTopic("Pose/visionEstimate", Pose3d.struct).publish();
 
-    private Pose() {}
+    private final MecanumDriveKinematics kinematics =
+        new MecanumDriveKinematics(kFrontLeftLocation, kFrontRightLocation, kBackLeftLocation, kBackRightLocation);
+    // private final MecanumDriveOdometry odometry = new MecanumDriveOdometry(kinematics, navx.getRotation2d(), drivetrain.getWheelPositions());
+    private final MecanumDrivePoseEstimator poseEstimator = new MecanumDrivePoseEstimator(
+        kinematics,
+        navx.getRotation2d(),
+        new MecanumDriveWheelPositions(0, 0, 0, 0),
+        Pose2d.kZero
+    );
 
-    public void periodicUpdate() {
-        for (PhotonPipelineResult result : frontCamera.getAllUnreadResults()) {
-            // Calculate robot's field relative pose
+    private Pose() {
+       
+    }
+
+    public void updateWheelPositions(MecanumDriveWheelPositions wheelPositions) {
+        poseEstimator.update(navx.getRotation2d(), wheelPositions);
+    }
+
+    public void periodicUpdate() {        
+        for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
             PhotonTrackedTarget target = result.getBestTarget();
             if (target != null && tagLayout.getTagPose(target.getFiducialId()).isPresent()) {
-                poseEstimate = PhotonUtils.estimateFieldToRobotAprilTag(
+                visionEstimate = PhotonUtils.estimateFieldToRobotAprilTag(
                     target.getBestCameraToTarget(),
                     tagLayout.getTagPose(target.getFiducialId()).get(),
-                    kFrontCameraLocation);
-                posePublisher.set(poseEstimate);
+                    kFrontCameraLocation
+                );
+                double ambiguity = target.getPoseAmbiguity();
+                double[] stddevMatrix = {ambiguity * kPositionStdev, ambiguity * kPositionStdev, ambiguity * kYawStdev};
+                Matrix<N3, N1> matrix = new Matrix<N3, N1>(Nat.N3(), Nat.N1(), stddevMatrix);
+                // trackedTargets[trackedTargets.length] = target;
+                posePublisher.set(visionEstimate);
+                poseEstimator.addVisionMeasurement(visionEstimate.toPose2d(), result.getTimestampSeconds(), matrix);
             }
         }
+
     }
 }
 

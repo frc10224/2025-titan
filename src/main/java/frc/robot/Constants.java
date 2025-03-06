@@ -36,7 +36,10 @@ public final class Constants {
 		// TODO: fix these!
 		// +X is forward, +Y is left, +Z is up
 		public static final Transform3d kFrontCameraLocation = new Transform3d(
-			new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0));
+			new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)
+		);
+		public static final double kPositionStdev = 0.5;
+		public static final double kYawStdev = 0.5;
 	}
 
 	public static final class ElevatorConstants {
