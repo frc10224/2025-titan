@@ -65,24 +65,30 @@ public final class Pose {
         poseEstimator.update(navx.getRotation2d(), wheelPositions);
     }
 
-    public void periodicUpdate() {        
+    public void periodicUpdate() {
+        PhotonPipelineResult finalResult = null;
+        double targetAmbiguity = 1;
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
             PhotonTrackedTarget target = result.getBestTarget();
-            if (target != null && tagLayout.getTagPose(target.getFiducialId()).isPresent()) {
-                visionEstimate = PhotonUtils.estimateFieldToRobotAprilTag(
-                    target.getBestCameraToTarget(),
-                    tagLayout.getTagPose(target.getFiducialId()).get(),
-                    kFrontCameraLocation
-                );
-                double ambiguity = target.getPoseAmbiguity();
-                double[] stddevMatrix = {ambiguity * kPositionStdev, ambiguity * kPositionStdev, ambiguity * kYawStdev};
-                Matrix<N3, N1> matrix = new Matrix<N3, N1>(Nat.N3(), Nat.N1(), stddevMatrix);
-                // trackedTargets[trackedTargets.length] = target;
-                posePublisher.set(visionEstimate);
-                poseEstimator.addVisionMeasurement(visionEstimate.toPose2d(), result.getTimestampSeconds(), matrix);
+            if (target != null && tagLayout.getTagPose(target.getFiducialId()).isPresent() && target.getPoseAmbiguity() < targetAmbiguity) {
+                finalResult = result;
+                targetAmbiguity = target.getPoseAmbiguity();
             }
         }
+        if (finalResult != null && targetAmbiguity < 1) {
+            PhotonTrackedTarget finalTarget = finalResult.getBestTarget();
+            visionEstimate = PhotonUtils.estimateFieldToRobotAprilTag(
+                    finalTarget.getBestCameraToTarget(),
+                    tagLayout.getTagPose(finalTarget.getFiducialId()).get(),
+                    kFrontCameraLocation
+            );
 
+            double[] stddevMatrix = {targetAmbiguity * kPositionStdev, targetAmbiguity * kPositionStdev, targetAmbiguity * kYawStdev};
+            Matrix<N3, N1> matrix = new Matrix<N3, N1>(Nat.N3(), Nat.N1(), stddevMatrix);
+            // trackedTargets[trackedTargets.length] = target;
+            posePublisher.set(visionEstimate);
+            poseEstimator.addVisionMeasurement(visionEstimate.toPose2d(), finalResult.getTimestampSeconds(), matrix);
+        }
     }
 }
 
