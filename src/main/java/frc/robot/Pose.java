@@ -33,10 +33,6 @@ public final class Pose {
     private static final Pose instance = new Pose();
     public static Pose getInstance() { return instance; }
 
-    /* private PhotonCamera[] activeCameras = {
-        new PhotonCamera("front"),
-        new PhotonCamera("back")
-    }; */
     private PhotonCamera camera = new PhotonCamera("front");
     
     private Pose3d visionEstimate = null;
@@ -85,9 +81,8 @@ public final class Pose {
 
             double[] stddevMatrix = {targetAmbiguity * kPositionStdev, targetAmbiguity * kPositionStdev, targetAmbiguity * kYawStdev};
             Matrix<N3, N1> matrix = new Matrix<N3, N1>(Nat.N3(), Nat.N1(), stddevMatrix);
-            // trackedTargets[trackedTargets.length] = target;
-            posePublisher.set(visionEstimate);
             poseEstimator.addVisionMeasurement(visionEstimate.toPose2d(), finalResult.getTimestampSeconds(), matrix);
+            posePublisher.set(new Pose3d(poseEstimator.getEstimatedPosition()));
         }
     }
 }
