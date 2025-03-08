@@ -21,8 +21,9 @@ public final class Constants {
 		public static final int kMotorId_LF = 1;
 		public static final int kMotorId_RF = 3;
 		public static final int kMotorId_RB = 4;
-		public static final Translation2d kFrontLeftLocation = new Translation2d(0.381, 11);
-		public static final Translation2d kFrontRightLocation = new Translation2d(0.381, 11);
+		// translations for motors
+		public static final Translation2d kFrontLeftLocation = new Translation2d(0.381, 0.381);
+		public static final Translation2d kFrontRightLocation = new Translation2d(0.381, -0.381);
 		public static final Translation2d kBackLeftLocation = new Translation2d(-0.381, 0.381);
 		public static final Translation2d kBackRightLocation = new Translation2d(-0.381, -0.381);
 		// for the L4 distance auto
@@ -36,7 +37,7 @@ public final class Constants {
 		// TODO: fix these!
 		// +X is forward, +Y is left, +Z is up
 		public static final Transform3d kFrontCameraLocation = new Transform3d(
-			new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)
+			new Translation3d(0, -0.4, 0.5), new Rotation3d(0, 0, 0)
 		);
 		public static final double kPositionStdev = 0.5;
 		public static final double kYawStdev = 0.5;

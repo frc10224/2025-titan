@@ -189,9 +189,9 @@ public class Drivetrain extends SubsystemBase {
 
 	public MecanumDriveWheelPositions getWheelPositions() {
 		return new MecanumDriveWheelPositions(
-			motorLf.getWheelDistance(),
+			motorLf.getWheelDistance().unaryMinus(),
 			motorRf.getWheelDistance(),
-			motorLb.getWheelDistance(),
+			motorLb.getWheelDistance().unaryMinus(),
 			motorRb.getWheelDistance()
 		);
 	}

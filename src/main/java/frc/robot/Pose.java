@@ -33,7 +33,10 @@ public final class Pose {
     private static final Pose instance = new Pose();
     public static Pose getInstance() { return instance; }
 
-    private PhotonCamera camera = new PhotonCamera("front");
+    private PhotonCamera[] cameras = {
+        new PhotonCamera("front"),
+        new PhotonCamera("back"),
+    };
     
     private Pose3d visionEstimate = null;
     private AHRS navx = new AHRS(AHRS.NavXComType.kMXP_SPI); 
@@ -41,7 +44,7 @@ public final class Pose {
         AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
 
     StructPublisher<Pose3d> posePublisher = NetworkTableInstance.getDefault()
-        .getStructTopic("Pose/visionEstimate", Pose3d.struct).publish();
+        .getStructTopic("Pose/estimate", Pose3d.struct).publish();
 
     private final MecanumDriveKinematics kinematics =
         new MecanumDriveKinematics(kFrontLeftLocation, kFrontRightLocation, kBackLeftLocation, kBackRightLocation);
@@ -64,13 +67,17 @@ public final class Pose {
     public void periodicUpdate() {
         PhotonPipelineResult finalResult = null;
         double targetAmbiguity = 1;
-        for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
-            PhotonTrackedTarget target = result.getBestTarget();
-            if (target != null && tagLayout.getTagPose(target.getFiducialId()).isPresent() && target.getPoseAmbiguity() < targetAmbiguity) {
-                finalResult = result;
-                targetAmbiguity = target.getPoseAmbiguity();
+
+        for (PhotonCamera camera : cameras) {
+            for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
+                PhotonTrackedTarget target = result.getBestTarget();
+                if (target != null && tagLayout.getTagPose(target.getFiducialId()).isPresent() && target.getPoseAmbiguity() < targetAmbiguity) {
+                    finalResult = result;
+                    targetAmbiguity = target.getPoseAmbiguity();
+                }
             }
         }
+
         if (finalResult != null && targetAmbiguity < 1) {
             PhotonTrackedTarget finalTarget = finalResult.getBestTarget();
             visionEstimate = PhotonUtils.estimateFieldToRobotAprilTag(
@@ -82,8 +89,9 @@ public final class Pose {
             double[] stddevMatrix = {targetAmbiguity * kPositionStdev, targetAmbiguity * kPositionStdev, targetAmbiguity * kYawStdev};
             Matrix<N3, N1> matrix = new Matrix<N3, N1>(Nat.N3(), Nat.N1(), stddevMatrix);
             poseEstimator.addVisionMeasurement(visionEstimate.toPose2d(), finalResult.getTimestampSeconds(), matrix);
-            posePublisher.set(new Pose3d(poseEstimator.getEstimatedPosition()));
         }
+        
+        posePublisher.set(new Pose3d(poseEstimator.getEstimatedPosition()));
     }
 }
 
