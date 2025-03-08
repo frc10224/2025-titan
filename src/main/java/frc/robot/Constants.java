@@ -61,9 +61,9 @@ public final class Constants {
 	public static final class CoralConstants {
 		public static final int kLeftMotorId = 7;
 		public static final int kRightMotorId = 8;
-		public static final double kP = 0.0001;
+		public static final double kP = 0.9;
 		public static final double kD = 0;
-		public static final double kFF = 0.0003;
+		public static final double kFF = 0;
 		public static final int kLaserCanId = 9;
 	}
 

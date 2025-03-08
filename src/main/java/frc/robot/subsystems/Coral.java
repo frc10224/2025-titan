@@ -20,11 +20,6 @@ import au.grapplerobotics.LaserCan;
 
 import static frc.robot.Constants.CoralConstants.*;
 
-// TODO: fix the issue where the coral falls out of the coral box. i reckon
-// this may involve doing something where when we stop it we use pid to set
-// a **position setpoint** so that it does not move, and if it does it will
-// move the coral back into the box
-
 public class Coral extends SubsystemBase {
 	private SparkMax leftMotor =
 		new SparkMax(kLeftMotorId, SparkMax.MotorType.kBrushless);
@@ -35,7 +30,8 @@ public class Coral extends SubsystemBase {
 	private SysIdRoutine sysidRoutine;
 	private LaserCan laser = new LaserCan(kLaserCanId);
 
-	private int laserDist = 9999999; 
+	private int laserDist = 9999999;
+	private double setpoint = 0;
 
 	public Coral() {
 		sysidRoutine = new SysIdRoutine(
@@ -64,6 +60,8 @@ public class Coral extends SubsystemBase {
 		leftMotor.configure(config,
 			SparkMax.ResetMode.kResetSafeParameters,
 			SparkMax.PersistMode.kPersistParameters);
+		
+		config.follow(leftMotor);
 
 		rightMotor.configure(config,
 			SparkMax.ResetMode.kResetSafeParameters,
@@ -76,47 +74,30 @@ public class Coral extends SubsystemBase {
 		SmartDashboard.putNumber("Coral/LaserDist", laserDist);
 	}
 
-	void setVelocity(double lRPM, double rRPM) {
+	void hold() {
+		setpoint = leftMotor.getEncoder().getPosition();
 		leftMotor.getClosedLoopController()
-			.setReference(lRPM, SparkMax.ControlType.kVelocity);
-		rightMotor.getClosedLoopController()
-			.setReference(-rRPM, SparkMax.ControlType.kVelocity);
+			.setReference(setpoint, SparkMax.ControlType.kPosition);
 	}
 
 	public Command collect() {
-		return Commands.runEnd(
-			() -> {
-				if (laserDist > 10) setVelocity(150, 150);
-				else setVelocity(-0.1, -0.1);
-			},
-			() -> { setVelocity(-0.1, -0.1); }
-		);
+		return Commands.runEnd(() -> leftMotor.set(0.05), () -> hold(), this)
+			.until(() -> laserDist < 10);
 	}
 
 	public Command slurp() {
 		return Commands.runEnd(
-			() -> { setVelocity(-100, -100); },
-			() -> { setVelocity(-0.5, -0.5); }
+			() -> leftMotor.set(-0.05),
+			() -> hold(),
+			this
 		);
 	}
 	
 	public Command spit() {
 		return Commands.runEnd(
-			() -> {
-				if (laserDist < 10) setVelocity(250, 250);
-				else setVelocity(0, 0);
-			},
-			() -> { setVelocity(0, 0); }
-		);
-	}
-
-	public Command spitFastOneSide() {
-		return Commands.runEnd(
-			() -> {
-				if (laserDist < 10) setVelocity(250, 80);
-				else setVelocity(0, 0);
-			},
-			() -> { setVelocity(0, 0); }
+			() -> leftMotor.set(0.05),
+			() -> hold(),
+			this
 		);
 	}
 
