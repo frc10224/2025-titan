@@ -164,16 +164,16 @@ public class Drivetrain extends SubsystemBase {
 
 			if (Math.abs(ySpeed) > Math.abs(xSpeed))
 				xSpeed = 0;
-			
-			// scale factors
-			xSpeed *= kMaxDriveSpeed;
-			ySpeed *= kMaxDriveSpeed;
-			zRotate *= kMaxTurnSpeed;
 
 			// curve
 			xSpeed = Math.pow(xSpeed, 3);
 			ySpeed = Math.pow(ySpeed, 3);
 			zRotate = Math.pow(zRotate, 3);
+
+			// scale factors
+			xSpeed *= kMaxDriveSpeed;
+			ySpeed *= kMaxDriveSpeed;
+			zRotate *= kMaxTurnSpeed;
 
 			// we are omitting the gyro angle here because field relative
 			// control on mecanum frankly is horrible
