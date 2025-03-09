@@ -5,6 +5,10 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.units.measure.Distance;
 
 public final class Constants {
+	public static final class RobotConstants {
+		public static final int kPDHCanId = 63;
+	}
+
 	public static final class DrivetrainConstants {
 		public static final double kMaxDriveSpeed = 1;
 		public static final double kMaxTurnSpeed = 0.8;

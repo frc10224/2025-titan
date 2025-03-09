@@ -4,17 +4,37 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.TimedRobot;
+import org.littletonrobotics.junction.*;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-public class Robot extends TimedRobot {
+import frc.robot.Constants.RobotConstants;
+
+public class Robot extends LoggedRobot {
 	// this gets populated by the dashboard picker ideally
 	private final RobotContainer container = new RobotContainer();
 	private final Command teleopCommand = container.getTeleopCommand();
 	private final Command autoCommand = container.getAutonomousCommand();
 
-	public Robot() {}
+	public Robot() {
+		Logger.recordMetadata("ProjectName", "2025-titan");
+    	Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
+		if (isReal()) {
+			Logger.addDataReceiver(new NT4Publisher());
+			new PowerDistribution(RobotConstants.kPDHCanId, ModuleType.kRev);
+		} else {
+			setUseTiming(false);
+			String logPath = LogFileUtil.findReplayLog();
+			Logger.setReplaySource(new WPILOGReader(logPath));
+		}
+
+		Logger.start();
+	}
 
 	@Override
 	public void robotInit() {}
