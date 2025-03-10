@@ -2,14 +2,14 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
+import edu.wpi.first.wpilibj.RobotController;
+
+import static edu.wpi.first.units.Units.*;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import static edu.wpi.first.units.Units.*;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.*;
@@ -18,6 +18,8 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import au.grapplerobotics.LaserCan;
 
 import static frc.robot.Constants.CoralConstants.*;
+
+import org.littletonrobotics.junction.Logger;
 
 public class Coral extends SubsystemBase {
 	private SparkMax leftMotor =
@@ -70,7 +72,7 @@ public class Coral extends SubsystemBase {
 	@Override
 	public void periodic() {
 		laserDist = laser.getMeasurement().distance_mm;
-		SmartDashboard.putNumber("Coral/LaserDist", laserDist);
+		Logger.recordOutput("Coral/laserDist", laserDist);
 	}
 
 	void hold() {

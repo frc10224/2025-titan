@@ -1,22 +1,22 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.units.measure.*;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
+
+import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-
-import static edu.wpi.first.units.Units.*;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
+import org.littletonrobotics.junction.Logger;
 
 import static frc.robot.Constants.ElevatorConstants.*;
 
@@ -77,19 +77,11 @@ public class Elevator extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-		// g_pose->UpdateFromWheelPositions(GetWheelPositions());
-		SmartDashboard.putNumber("Elevator/BoreEncoderValue",
-			boreEncoder.getDistance());
-		SmartDashboard.putNumber("Elevator/NeoEncoderValue",
-			leftMotor.getEncoder().getPosition());
-		SmartDashboard.putNumber("Elevator/Speed",
-			leftMotor.getEncoder().getVelocity());
-		SmartDashboard.putNumber("Elevator/MotorCurrent",
-			leftMotor.getOutputCurrent());
-		SmartDashboard.putNumber("Elevator/setpoint", setpoint);
-
-		SmartDashboard.putNumber("Elevator/CurrentLimitTime", currentLimitTime);
-
+		Logger.recordOutput("Elevator/BoreEncoder", boreEncoder.getDistance());
+		Logger.recordOutput("Elevator/NeoEncoder", leftMotor.getEncoder().getPosition());
+		Logger.recordOutput("Elevator/Velocity", leftMotor.getEncoder().getVelocity());
+		Logger.recordOutput("Elevator/Current", leftMotor.getOutputCurrent());
+		Logger.recordOutput("Elevator/Setpoint", setpoint);
 		// zero the neo encoder with the bore encoder, seems to help fix
 		// weird drift issues
 		if (Math.abs(boreEncoder.getDistance()) < 0.02) {
