@@ -52,6 +52,7 @@ class DriveMotor {
 		
 		Distance getWheelDistance() {
 			return kWheelRadius
+				.times(Math.PI)
 				.times(kGearRatio)
 				.times(motor.getEncoder().getPosition());
 		}
@@ -118,6 +119,7 @@ public class Drivetrain extends SubsystemBase {
 	@Override
 	public void periodic() {
 		Pose.getInstance().updateWheelPositions(getWheelPositions());
+		Logger.recordOutput("Drivetrain/wheelPositions", getWheelPositions());
 	}
 
 	public void SetVelocity(double xSpeed, double ySpeed, double zRotate) {
