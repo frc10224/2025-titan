@@ -18,8 +18,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.numbers.*;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructPublisher;
 
 import static frc.robot.Constants.DrivetrainConstants.kBackLeftLocation;
 import static frc.robot.Constants.DrivetrainConstants.kBackRightLocation;
