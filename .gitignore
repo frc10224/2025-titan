@@ -188,3 +188,4 @@ compile_commands.json
 
 # gversion
 src/main/java/frc/robot/BuildConstants.java
+simgui-ds.json
