@@ -37,9 +37,10 @@ public final class Pose {
 
     private PhotonCamera[] cameras = {
         new PhotonCamera("front"),
-        new PhotonCamera("back"),
+        //new PhotonCamera("back"),
     };
     
+    private MecanumDriveWheelPositions wheelPositions;
     private Pose3d visionEstimate = null;
     private AHRS navx = new AHRS(AHRS.NavXComType.kMXP_SPI); 
     AprilTagFieldLayout tagLayout = 
@@ -55,8 +56,13 @@ public final class Pose {
         Pose2d.kZero
     );
 
-    public void updateWheelPositions(MecanumDriveWheelPositions wheelPositions) {
+    public void updateWheelPositions(MecanumDriveWheelPositions wheelPos) {
+        wheelPositions = wheelPos;
         poseEstimator.update(navx.getRotation2d(), wheelPositions);
+    }
+
+    public void resetPosition(Pose2d pose) {
+        poseEstimator.resetPosition(navx.getRotation2d(), wheelPositions, pose);
     }
 
     public Pose2d getEstimatedPose() {
@@ -70,6 +76,7 @@ public final class Pose {
         // pick the result with the lowest ambiguity
         for (PhotonCamera camera : cameras) {
             for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
+                if (!result.hasTargets()) continue;
                 PhotonTrackedTarget target = result.getBestTarget();
                 if (target != null && tagLayout.getTagPose(target.getFiducialId()).isPresent() && target.getPoseAmbiguity() < targetAmbiguity) {
                     finalResult = result;
@@ -78,7 +85,7 @@ public final class Pose {
             }
         }
 
-        if (finalResult != null && targetAmbiguity < 1) {
+        if (finalResult != null && targetAmbiguity < 0.1) {
             PhotonTrackedTarget finalTarget = finalResult.getBestTarget();
             visionEstimate = PhotonUtils.estimateFieldToRobotAprilTag(
                 finalTarget.getBestCameraToTarget(),
@@ -88,7 +95,9 @@ public final class Pose {
 
             double[] matrixValues = {targetAmbiguity * kPositionStdev, targetAmbiguity * kPositionStdev, targetAmbiguity * kYawStdev};
             Matrix<N3, N1> stddevMatrix = new Matrix<N3, N1>(Nat.N3(), Nat.N1(), matrixValues);
+            // Logger.recordOutput("Pose/stdDev", stddevMatrix);
             poseEstimator.addVisionMeasurement(visionEstimate.toPose2d(), finalResult.getTimestampSeconds(), stddevMatrix);
+            Logger.recordOutput("Pose/visionAmbiguity", targetAmbiguity);
             Logger.recordOutput("Pose/visionOnlyEstimate", visionEstimate.toPose2d());
         }
         Logger.recordOutput("Pose/estimatedPose", poseEstimator.getEstimatedPosition());
