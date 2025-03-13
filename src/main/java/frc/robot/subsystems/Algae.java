@@ -9,6 +9,8 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import static frc.robot.Constants.AlgaeConstants.*;
 
+import org.littletonrobotics.junction.Logger;
+
 public class Algae extends SubsystemBase {
 	private final SparkMax leftMotor =
 		new SparkMax(kLeftMotorId, SparkMax.MotorType.kBrushless);
@@ -32,7 +34,10 @@ public class Algae extends SubsystemBase {
 	}
 
 	@Override
-	public void periodic() {}
+	public void periodic() {
+		Logger.recordOutput("Algae/leftOutput", leftMotor.getAppliedOutput());
+		Logger.recordOutput("Algae/rightOutput", rightMotor.getAppliedOutput());
+	}
 
 	public Command collect() {
 		return Commands.runEnd(
