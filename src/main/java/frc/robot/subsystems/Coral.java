@@ -16,6 +16,7 @@ import com.revrobotics.spark.*;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import au.grapplerobotics.LaserCan;
+import au.grapplerobotics.interfaces.LaserCanInterface;
 
 import static frc.robot.Constants.CoralConstants.*;
 
@@ -29,12 +30,17 @@ public class Coral extends SubsystemBase {
 		new SparkMax(kRightMotorId, SparkMax.MotorType.kBrushless);
 	
 	private SysIdRoutine sysidRoutine;
-	private LaserCan laser = new LaserCan(kLaserCanId);
+	private LaserCan frontLaser = new LaserCan(kFrontLaserId);
+	private LaserCan backLaser = new LaserCan(kBackLaserId);
 
-	private int laserDist = 9999999;
+	private int frontLaserDist = 9999999;
+	private int backLaserDist = 9999999;
 	private double setpoint = 0;
 
-	public Coral() {
+	private Elevator elevator;
+
+	public Coral(Elevator ele) {
+		elevator = ele;
 		sysidRoutine = new SysIdRoutine(
 			new SysIdRoutine.Config(null, null, Seconds.of(3), null),
 			new SysIdRoutine.Mechanism(
@@ -62,7 +68,7 @@ public class Coral extends SubsystemBase {
 			SparkMax.ResetMode.kResetSafeParameters,
 			SparkMax.PersistMode.kPersistParameters);
 		
-		config.follow(leftMotor);
+		config.follow(leftMotor, true);
 
 		rightMotor.configure(config,
 			SparkMax.ResetMode.kResetSafeParameters,
@@ -71,8 +77,17 @@ public class Coral extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-		laserDist = laser.getMeasurement().distance_mm;
-		Logger.recordOutput("Coral/laserDist", laserDist);
+		LaserCanInterface.Measurement frontMeasurement = frontLaser.getMeasurement();
+		LaserCanInterface.Measurement backMeasurement = backLaser.getMeasurement();
+
+		if (backMeasurement != null)
+			backLaserDist = backMeasurement.distance_mm;
+		if (frontMeasurement != null)
+			frontLaserDist = frontMeasurement.distance_mm;
+			
+		Logger.recordOutput("Coral/frontDist", frontLaserDist);
+		Logger.recordOutput("Coral/backDist", backLaserDist);
+		elevator.isLocked = backLaserDist < 50;
 	}
 
 	void hold() {
@@ -82,8 +97,8 @@ public class Coral extends SubsystemBase {
 	}
 
 	public Command collect() {
-		return Commands.runEnd(() -> leftMotor.set(0.05), () -> hold(), this)
-			.until(() -> laserDist < 10);
+		return Commands.runEnd(() -> leftMotor.set(0.06), () -> hold(), this)
+			.until(() -> frontLaserDist < 10);
 	}
 
 	public Command slurp() {

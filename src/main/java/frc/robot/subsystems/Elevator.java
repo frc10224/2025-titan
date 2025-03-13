@@ -27,6 +27,8 @@ public class Elevator extends SubsystemBase {
 		new SparkMax(kRightMotorId, SparkMax.MotorType.kBrushless);
 
 	private double setpoint = 0;
+
+	public boolean isLocked = false;
 	
 	private SysIdRoutine sysidRoutine = new SysIdRoutine(
 			new SysIdRoutine.Config(null, Volts.of(4), null, null),
@@ -47,9 +49,7 @@ public class Elevator extends SubsystemBase {
 			)
 	);
 	private Encoder boreEncoder = new Encoder(kEncoderChA, kEncoderChB);
-
-	private double currentLimitTime = 0.0;
-
+	
 	public Elevator() {
 		SparkMaxConfig config = new SparkMaxConfig();
 
@@ -57,7 +57,7 @@ public class Elevator extends SubsystemBase {
 		config.closedLoop.pidf(kP, 0, kD, kFF);
 		config.encoder.positionConversionFactor(kGearboxRatio);
 
-		config.smartCurrentLimit(40);
+		config.smartCurrentLimit(50);
 
 		leftMotor.configure(config,
 			SparkMax.ResetMode.kResetSafeParameters,
@@ -81,16 +81,19 @@ public class Elevator extends SubsystemBase {
 		Logger.recordOutput("Elevator/NeoEncoder", leftMotor.getEncoder().getPosition());
 		Logger.recordOutput("Elevator/Velocity", leftMotor.getEncoder().getVelocity());
 		Logger.recordOutput("Elevator/Current", leftMotor.getOutputCurrent());
+		Logger.recordOutput("Elevator/RightCurrent", rightMotor.getOutputCurrent());
 		Logger.recordOutput("Elevator/Setpoint", setpoint);
+		Logger.recordOutput("Elevator/IsLocked", isLocked);
 		// zero the neo encoder with the bore encoder, seems to help fix
 		// weird drift issues
 		if (Math.abs(boreEncoder.getDistance()) < 0.02) {
 			leftMotor.getEncoder().setPosition(0);
 		}
 	}
- 
+
 	public Command setPosition(double turns) {
 		return Commands.runOnce(() -> {
+				if (isLocked) return;
 				setpoint = turns;
 				leftMotor.getClosedLoopController()
 					.setReference(turns, SparkMax.ControlType.kPosition);

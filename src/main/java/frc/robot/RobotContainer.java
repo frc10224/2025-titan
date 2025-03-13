@@ -13,7 +13,7 @@ import frc.robot.subsystems.*;
 public class RobotContainer {
 	private final Drivetrain drivetrain = new Drivetrain();
 	private final Elevator elevator = new Elevator();
-	private final Coral coral = new Coral();
+	private final Coral coral = new Coral(elevator);
 	private final Algae algae = new Algae();
 
 	CommandXboxController driver = new CommandXboxController(0);
@@ -21,7 +21,7 @@ public class RobotContainer {
 
 	public RobotContainer() {
 		// set controller binds
-		driver.rightTrigger().whileTrue(drivetrain.lineupL4());
+		//driver.rightTrigger().whileTrue(drivetrain.slowDrive());
 
 		operator.povLeft().whileTrue(algae.collect());
 		operator.povRight().whileTrue(algae.spit());
@@ -40,9 +40,15 @@ public class RobotContainer {
 	}
 
 	public Command getAutonomousCommand() {
-		return Commands.runEnd(
-			() -> drivetrain.SetVelocity(1, 0, 0),
-			() -> drivetrain.SetVelocity(0, 0, 0));
+		return Commands.sequence(
+			Commands.runEnd(
+				() -> drivetrain.SetVelocity(0.5, 0, 0),
+				() -> drivetrain.SetVelocity(0, 0, 0)
+			).withTimeout(0.8),
+			elevator.setLevel(1),
+			Commands.waitSeconds(1),
+			coral.spit().withTimeout(1)
+		);
 	}
 
 	public Command getTeleopCommand() {

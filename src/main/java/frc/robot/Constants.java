@@ -26,10 +26,10 @@ public final class Constants {
 		public static final int kMotorId_RF = 3;
 		public static final int kMotorId_RB = 4;
 		// translations for motors
-		public static final Translation2d kFrontLeftLocation = new Translation2d(0.381, 0.381);
-		public static final Translation2d kFrontRightLocation = new Translation2d(0.381, -0.381);
-		public static final Translation2d kBackLeftLocation = new Translation2d(-0.381, 0.381);
-		public static final Translation2d kBackRightLocation = new Translation2d(-0.381, -0.381);
+		public static final Translation2d kFrontLeftLocation = new Translation2d(Inches.of(14), Inches.of(10.5));
+		public static final Translation2d kFrontRightLocation = new Translation2d(Inches.of(14), Inches.of(-10.5));
+		public static final Translation2d kBackLeftLocation = new Translation2d(Inches.of(-14), Inches.of(10.5));
+		public static final Translation2d kBackRightLocation = new Translation2d(Inches.of(-14), Inches.of(-10.5));
 		// for the L4 distance auto
 		public static final int kLaserCanId = 11;
 		public static final double kLaserDriveP = 0.0001;
@@ -40,11 +40,13 @@ public final class Constants {
 	public static final class PoseConstants { 
 		// TODO: fix these!
 		// +X is forward, +Y is left, +Z is up
+		// This is the transform FROM the camera TO the origin
 		public static final Transform3d kFrontCameraLocation = new Transform3d(
-			new Translation3d(0, -0.4, 0.5), new Rotation3d(0, 0, 0)
+			new Translation3d(Inches.of(-2), Inches.of(-9), Inches.of(-25.75)),
+			new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(13.6))
 		);
-		public static final double kPositionStdev = 0.5;
-		public static final double kYawStdev = 0.5;
+		public static final double kPositionStdev = 1000;
+		public static final double kYawStdev = 100000;
 	}
 
 	public static final class ElevatorConstants {
@@ -68,12 +70,13 @@ public final class Constants {
 		public static final double kP = 0.9;
 		public static final double kD = 0;
 		public static final double kFF = 0;
-		public static final int kLaserCanId = 9;
+		public static final int kFrontLaserId = 11;
+		public static final int kBackLaserId = 12;
 	}
 
 	public static final class AlgaeConstants {
-		public static final int kLeftMotorId = 9;
-		public static final int kRightMotorId = 10;
+		public static final int kLeftMotorId = 10;
+		public static final int kRightMotorId = 9;
 	}
 }
 
