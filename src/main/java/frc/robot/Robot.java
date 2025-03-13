@@ -26,7 +26,7 @@ public class Robot extends LoggedRobot {
     	Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
 		if (isReal()) {
 			Logger.addDataReceiver(new NT4Publisher());
-			new PowerDistribution(RobotConstants.kPDHCanId, ModuleType.kRev);
+			// new PowerDistribution(RobotConstants.kPDHCanId, ModuleType.kRev);
 		} else {
 			setUseTiming(false);
 			String logPath = LogFileUtil.findReplayLog();
@@ -34,6 +34,8 @@ public class Robot extends LoggedRobot {
 		}
 
 		Logger.start();
+
+		au.grapplerobotics.CanBridge.runTCP();
 	}
 
 	@Override
