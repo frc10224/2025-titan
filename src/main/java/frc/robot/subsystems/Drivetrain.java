@@ -125,8 +125,8 @@ public class Drivetrain extends SubsystemBase {
 	public void SetVelocity(double xSpeed, double ySpeed, double zRotate) {
 		MecanumDrive.WheelSpeeds ws =
 			MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate);
-		motorLf.setVelocity(ws.frontLeft);
-		motorLb.setVelocity(ws.rearLeft);
+		motorLf.setVelocity(-ws.frontLeft);
+		motorLb.setVelocity(-ws.rearLeft);
 		motorRf.setVelocity(ws.frontRight);
 		motorRb.setVelocity(ws.rearRight);
 	}

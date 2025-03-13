@@ -41,13 +41,17 @@ public class RobotContainer {
 
 	public Command getAutonomousCommand() {
 		return Commands.sequence(
+			elevator.setLevel(0),
 			Commands.runEnd(
-				() -> drivetrain.SetVelocity(0.5, 0, 0),
+				() -> {
+					coral.hold();
+					drivetrain.SetVelocity(0.001, 0, 0);
+				},
 				() -> drivetrain.SetVelocity(0, 0, 0)
-			).withTimeout(0.8),
+			).withTimeout(2.1),
 			elevator.setLevel(1),
 			Commands.waitSeconds(1),
-			coral.spit().withTimeout(1)
+			coral.spit().withTimeout(3)
 		);
 	}
 
