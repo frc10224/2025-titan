@@ -34,8 +34,6 @@ public class Robot extends LoggedRobot {
 		}
 
 		Logger.start();
-
-		au.grapplerobotics.CanBridge.runTCP();
 	}
 
 	@Override

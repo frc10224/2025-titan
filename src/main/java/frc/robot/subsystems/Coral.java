@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants.ElevatorConstants;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.*;
@@ -87,18 +88,20 @@ public class Coral extends SubsystemBase {
 			
 		Logger.recordOutput("Coral/frontDist", frontLaserDist);
 		Logger.recordOutput("Coral/backDist", backLaserDist);
+		Logger.recordOutput("Coral/wheelDist", leftMotor.getEncoder().getPosition());
 		elevator.isLocked = backLaserDist < 50;
 	}
 
-	void hold() {
+	public void hold() {
 		setpoint = leftMotor.getEncoder().getPosition();
+		Logger.recordOutput("Coral/setpoint", setpoint);
 		leftMotor.getClosedLoopController()
 			.setReference(setpoint, SparkMax.ControlType.kPosition);
 	}
 
 	public Command collect() {
 		return Commands.runEnd(() -> leftMotor.set(0.06), () -> hold(), this)
-			.until(() -> frontLaserDist < 10);
+			.until(() -> frontLaserDist < 20);
 	}
 
 	public Command slurp() {
@@ -111,7 +114,12 @@ public class Coral extends SubsystemBase {
 	
 	public Command spit() {
 		return Commands.runEnd(
-			() -> leftMotor.set(0.05),
+			() -> {
+				if (elevator.setpoint != ElevatorConstants.kElevatorLevels[3])
+					leftMotor.set(0.1);
+				else
+					leftMotor.set(0.05);
+			},
 			() -> hold(),
 			this
 		);

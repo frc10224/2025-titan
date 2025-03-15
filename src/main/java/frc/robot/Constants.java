@@ -13,7 +13,7 @@ public final class Constants {
 		public static final double kMaxDriveSpeed = 1;
 		public static final double kMaxTurnSpeed = 0.8;
 		public static final double kGearRatio = 1/5.71;
-		public static final Distance kWheelRadius = Inches.of(2);
+		public static final Distance kWheelRadius = Inches.of(2 * 1.11);
 		public static final double kP = 0.0000026155;
 		public static final double kD = 0;
 		public static final double kFF = 0.11911;
@@ -45,8 +45,8 @@ public final class Constants {
 			new Translation3d(Inches.of(-2), Inches.of(-9), Inches.of(-25.75)),
 			new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(13.6))
 		);
-		public static final double kPositionStdev = 1000;
-		public static final double kYawStdev = 100000;
+		public static final double kVisPositionStdev = 0.02;
+		public static final double kVisYawStdev = 0;
 	}
 
 	public static final class ElevatorConstants {

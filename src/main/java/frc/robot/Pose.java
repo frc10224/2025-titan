@@ -15,6 +15,8 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.MecanumDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.numbers.*;
@@ -69,23 +71,30 @@ public final class Pose {
         return poseEstimator.getEstimatedPosition();
     }
 
+    private double translationLength(Transform3d t) {
+        return Math.sqrt(Math.pow(t.getX(), 2) + Math.pow(t.getY(), 2));
+    }
+
     public void periodicUpdate() {
         PhotonPipelineResult finalResult = null;
-        double targetAmbiguity = 1;
+        double tagDist = 1.5;
 
         // pick the result with the lowest ambiguity
         for (PhotonCamera camera : cameras) {
             for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
                 if (!result.hasTargets()) continue;
                 PhotonTrackedTarget target = result.getBestTarget();
-                if (target != null && tagLayout.getTagPose(target.getFiducialId()).isPresent() && target.getPoseAmbiguity() < targetAmbiguity) {
+                if (target != null && tagLayout.getTagPose(target.getFiducialId()).isPresent()
+                        && translationLength(target.getBestCameraToTarget()) < tagDist) {
                     finalResult = result;
-                    targetAmbiguity = target.getPoseAmbiguity();
+                    tagDist = translationLength(target.getBestCameraToTarget());
                 }
             }
         }
 
-        if (finalResult != null && targetAmbiguity < 0.1) {
+        Logger.recordOutput("Pose/tagDist", tagDist);
+
+        if (finalResult != null && tagDist < 1.5) {
             PhotonTrackedTarget finalTarget = finalResult.getBestTarget();
             visionEstimate = PhotonUtils.estimateFieldToRobotAprilTag(
                 finalTarget.getBestCameraToTarget(),
@@ -93,11 +102,10 @@ public final class Pose {
                 kFrontCameraLocation
             );
 
-            double[] matrixValues = {targetAmbiguity * kPositionStdev, targetAmbiguity * kPositionStdev, targetAmbiguity * kYawStdev};
+            double[] matrixValues = {kVisPositionStdev, kVisPositionStdev, kVisYawStdev};
             Matrix<N3, N1> stddevMatrix = new Matrix<N3, N1>(Nat.N3(), Nat.N1(), matrixValues);
             // Logger.recordOutput("Pose/stdDev", stddevMatrix);
             poseEstimator.addVisionMeasurement(visionEstimate.toPose2d(), finalResult.getTimestampSeconds(), stddevMatrix);
-            Logger.recordOutput("Pose/visionAmbiguity", targetAmbiguity);
             Logger.recordOutput("Pose/visionOnlyEstimate", visionEstimate.toPose2d());
         }
         Logger.recordOutput("Pose/estimatedPose", poseEstimator.getEstimatedPosition());

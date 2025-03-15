@@ -26,7 +26,7 @@ public class Elevator extends SubsystemBase {
 	private final SparkMax rightMotor =
 		new SparkMax(kRightMotorId, SparkMax.MotorType.kBrushless);
 
-	private double setpoint = 0;
+	public double setpoint = 0;
 
 	public boolean isLocked = false;
 	

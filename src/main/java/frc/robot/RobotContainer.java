@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.subsystems.*;
 
@@ -44,14 +45,16 @@ public class RobotContainer {
 			elevator.setLevel(0),
 			Commands.runEnd(
 				() -> {
-					coral.hold();
+					//coral.hold();
 					drivetrain.SetVelocity(0.001, 0, 0);
 				},
 				() -> drivetrain.SetVelocity(0, 0, 0)
 			).withTimeout(2.1),
 			elevator.setLevel(1),
-			Commands.waitSeconds(1),
-			coral.spit().withTimeout(3)
+			Commands.waitSeconds(4),
+			coral.spit().withTimeout(3),
+			Commands.waitSeconds(2),
+			elevator.setLevel(0)
 		);
 	}
 
