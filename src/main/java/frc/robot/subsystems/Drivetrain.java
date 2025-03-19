@@ -135,7 +135,7 @@ public class Drivetrain extends SubsystemBase {
 					pose.getTagY().plus(Inches.of(-6.47)).in(Meters),
 					pose.getTagX().plus(Inches.of(1.62)).in(Meters));
 				double angleToRightReef = Math.atan2(
-					pose.getTagY().plus(Inches.of(6.47 + 0.7)).in(Meters),
+					pose.getTagY().plus(Inches.of(6.47)).in(Meters),
 					pose.getTagX().plus(Inches.of(1.62)).in(Meters));
 
 				// angle at whichever one we are currently closer to being pointed at
