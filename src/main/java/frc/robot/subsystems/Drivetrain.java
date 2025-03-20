@@ -5,6 +5,8 @@ import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
@@ -118,8 +120,41 @@ public class Drivetrain extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-		Pose.getInstance().updateWheelPositions(getWheelPositions());
 		Logger.recordOutput("Drivetrain/wheelPositions", getWheelPositions());
+	}
+
+	private PIDController yawPid = new PIDController(kYawP, 0, kYawD);
+	public Command aimAtTag() {
+		yawPid.setTolerance(0.0);
+		return Commands.sequence(
+			Commands.runOnce(() -> {
+				Pose pose = Pose.getInstance();
+				// https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025FieldDrawings.pdf
+				// page 162
+				// The offset from the tag center to the end of the reef post is
+				// 6.47" left or right and 1.62" into the reef
+				double angleToLeftReef = Math.atan2(
+					pose.getTagY().plus(Inches.of(-6.47)).in(Meters),
+					pose.getTagX().plus(Inches.of(1.62)).in(Meters));
+				double angleToRightReef = Math.atan2(
+					pose.getTagY().plus(Inches.of(6.47 + 0.7)).in(Meters),
+					pose.getTagX().plus(Inches.of(1.62)).in(Meters));
+
+				// angle at whichever one we are currently closer to being pointed at
+				yawPid.setSetpoint(Math.abs(pose.getYaw() - angleToLeftReef) < Math.abs(pose.getYaw() - angleToRightReef)
+					? angleToLeftReef : angleToRightReef);
+
+				Logger.recordOutput("Drivetrain/Yaw setpoint", yawPid.getSetpoint());
+			}),
+			Commands.runEnd(() -> {
+				if (Pose.getInstance().getRobotToTag() == null) {
+					SetVelocity(0, 0, 0);
+					return;
+				};
+				SetVelocity(0, 0, -yawPid.calculate(Pose.getInstance().getYaw()));
+			}, () -> SetVelocity(0, 0, 0), this) // when we are done stop
+		);
+		//.until(() -> yawPid.atSetpoint());
 	}
 
 	public void SetVelocity(double xSpeed, double ySpeed, double zRotate) {

@@ -7,7 +7,6 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.subsystems.*;
 
@@ -22,7 +21,7 @@ public class RobotContainer {
 
 	public RobotContainer() {
 		// set controller binds
-		//driver.rightTrigger().whileTrue(drivetrain.slowDrive());
+		driver.rightTrigger().whileTrue(drivetrain.aimAtTag());
 
 		operator.povLeft().whileTrue(algae.collect());
 		operator.povRight().whileTrue(algae.spit());
@@ -31,6 +30,7 @@ public class RobotContainer {
 
 		operator.a().whileTrue(coral.collect());
 		operator.b().whileTrue(coral.spit());
+		driver.b().whileTrue(coral.spit());
 		operator.x().whileTrue(coral.slurp());
 		operator.y().whileTrue(elevator.zero());
 		
@@ -38,6 +38,10 @@ public class RobotContainer {
 		operator.rightBumper().onTrue(elevator.setLevel(1));
 		operator.leftTrigger().onTrue(elevator.setLevel(2));
 		operator.leftBumper().onTrue(elevator.setLevel(3));
+
+		drivetrain.setDefaultCommand(getTeleopCommand());
+
+		//driver.rightTrigger().whileTrue(drivetrain.aimAtTag());
 	}
 
 	public Command getAutonomousCommand() {

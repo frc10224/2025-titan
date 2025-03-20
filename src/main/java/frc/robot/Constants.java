@@ -35,15 +35,16 @@ public final class Constants {
 		public static final double kLaserDriveP = 0.0001;
 		public static final double kLaserDriveD = 1;
 		public static final Distance kL4ScoringDistance = Centimeters.of(8);
+		public static final double kYawP = 0.004;
+		public static final double kYawD = 0.001;
 	};
 
 	public static final class PoseConstants { 
-		// TODO: fix these!
 		// +X is forward, +Y is left, +Z is up
 		// This is the transform FROM the camera TO the origin
 		public static final Transform3d kFrontCameraLocation = new Transform3d(
-			new Translation3d(Inches.of(-2), Inches.of(-9), Inches.of(-25.75)),
-			new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(13.6))
+			new Translation3d(Inches.of(7.08), Inches.of(-10.4), Inches.of(-25.75)),
+			new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(13.6 + 180.0))
 		);
 		public static final double kVisPositionStdev = 0.02;
 		public static final double kVisYawStdev = 0;
@@ -59,7 +60,7 @@ public final class Constants {
 		public static final int kEncoderChA = 8;
 		public static final int kEncoderChB = 9; 
 		public static final double kGearboxRatio = 1./20.;
-		public static final double[] kElevatorLevels = { 0, 0.65, 1.86, 3.78 };
+		public static final double[] kElevatorLevels = { 0, 0.5, 1.67, 3.78 };
 		public static final double kAlgaeHeight2 = 3.05;
 		public static final double kAlgaeHeight1 = 1.85;
 	}

@@ -2,29 +2,14 @@ package frc.robot;
 
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import com.studica.frc.AHRS;
-
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.estimator.MecanumDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
-import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
-import edu.wpi.first.math.numbers.*;
+import edu.wpi.first.units.measure.Distance;
 
-import static frc.robot.Constants.DrivetrainConstants.kBackLeftLocation;
-import static frc.robot.Constants.DrivetrainConstants.kBackRightLocation;
-import static frc.robot.Constants.DrivetrainConstants.kFrontLeftLocation;
-import static frc.robot.Constants.DrivetrainConstants.kFrontRightLocation;
+import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.PoseConstants.*;
 
 // this may not be a "subsystem" but it does contain a lot of things that
@@ -42,73 +27,60 @@ public final class Pose {
         //new PhotonCamera("back"),
     };
     
-    private MecanumDriveWheelPositions wheelPositions;
-    private Pose3d visionEstimate = null;
-    private AHRS navx = new AHRS(AHRS.NavXComType.kMXP_SPI); 
-    AprilTagFieldLayout tagLayout = 
-        AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeAndyMark);
+    private Transform3d robotToTag = null;
+    private LinearFilter yawFilter = LinearFilter.movingAverage(5);
+    private LinearFilter xFilter = LinearFilter.movingAverage(5);
+    private LinearFilter yFilter = LinearFilter.movingAverage(5);
 
-    private final MecanumDriveKinematics kinematics =
-        new MecanumDriveKinematics(kFrontLeftLocation, kFrontRightLocation, kBackLeftLocation, kBackRightLocation);
-    // private final MecanumDriveOdometry odometry = new MecanumDriveOdometry(kinematics, navx.getRotation2d(), drivetrain.getWheelPositions());
-    private final MecanumDrivePoseEstimator poseEstimator = new MecanumDrivePoseEstimator(
-        kinematics,
-        navx.getRotation2d(),
-        new MecanumDriveWheelPositions(0, 0, 0, 0),
-        Pose2d.kZero
-    );
-
-    public void updateWheelPositions(MecanumDriveWheelPositions wheelPos) {
-        wheelPositions = wheelPos;
-        poseEstimator.update(navx.getRotation2d(), wheelPositions);
+    public Transform3d getRobotToTag() {
+        return robotToTag;
     }
 
-    public void resetPosition(Pose2d pose) {
-        poseEstimator.resetPosition(navx.getRotation2d(), wheelPositions, pose);
+    public double getYaw() {
+        return yawFilter.lastValue();
     }
 
-    public Pose2d getEstimatedPose() {
-        return poseEstimator.getEstimatedPosition();
+    public Distance getTagX() {
+        return Meters.of(xFilter.lastValue());
+    }
+
+    public Distance getTagY() {
+        return Meters.of(yFilter.lastValue());
     }
 
     private double translationLength(Transform3d t) {
         return Math.sqrt(Math.pow(t.getX(), 2) + Math.pow(t.getY(), 2));
     }
 
-    public void periodicUpdate() {
-        PhotonPipelineResult finalResult = null;
-        double tagDist = 1.5;
+    private double translationLength(Distance x, Distance y) {
+        return Math.sqrt(Math.pow(x.baseUnitMagnitude(), 2) + Math.pow(y.baseUnitMagnitude(), 2));
+    }
 
-        // pick the result with the lowest ambiguity
+    public void periodicUpdate() {
+        PhotonTrackedTarget finalTarget = null;
+        double tagDist = 100;
+
+        // pick the closest tag we see
         for (PhotonCamera camera : cameras) {
             for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
                 if (!result.hasTargets()) continue;
-                PhotonTrackedTarget target = result.getBestTarget();
-                if (target != null && tagLayout.getTagPose(target.getFiducialId()).isPresent()
-                        && translationLength(target.getBestCameraToTarget()) < tagDist) {
-                    finalResult = result;
-                    tagDist = translationLength(target.getBestCameraToTarget());
+                for (PhotonTrackedTarget target : result.targets) {
+                    double l = translationLength(target.getBestCameraToTarget());
+                    if (l < tagDist) {
+                        finalTarget = target;
+                        tagDist = l;
+                    }
                 }
             }
         }
 
-        Logger.recordOutput("Pose/tagDist", tagDist);
-
-        if (finalResult != null && tagDist < 1.5) {
-            PhotonTrackedTarget finalTarget = finalResult.getBestTarget();
-            visionEstimate = PhotonUtils.estimateFieldToRobotAprilTag(
-                finalTarget.getBestCameraToTarget(),
-                tagLayout.getTagPose(finalTarget.getFiducialId()).get(),
-                kFrontCameraLocation
-            );
-
-            double[] matrixValues = {kVisPositionStdev, kVisPositionStdev, kVisYawStdev};
-            Matrix<N3, N1> stddevMatrix = new Matrix<N3, N1>(Nat.N3(), Nat.N1(), matrixValues);
-            // Logger.recordOutput("Pose/stdDev", stddevMatrix);
-            poseEstimator.addVisionMeasurement(visionEstimate.toPose2d(), finalResult.getTimestampSeconds(), stddevMatrix);
-            Logger.recordOutput("Pose/visionOnlyEstimate", visionEstimate.toPose2d());
+        if (finalTarget != null && tagDist < 100) {
+            robotToTag = finalTarget.getBestCameraToTarget().inverse().plus(kFrontCameraLocation);
+            Logger.recordOutput("Pose/Tag Distance", translationLength(getTagX(), getTagY()));
+            Logger.recordOutput("Pose/Yaw diff from tag", yawFilter.calculate(robotToTag.getRotation().getZ()));
+            Logger.recordOutput("Pose/Tag X Distance", xFilter.calculate(robotToTag.getX()));
+            Logger.recordOutput("Pose/Tag Y Distance", yFilter.calculate(robotToTag.getY()));
         }
-        Logger.recordOutput("Pose/estimatedPose", poseEstimator.getEstimatedPosition());
     }
 }
 
