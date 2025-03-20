@@ -6,6 +6,8 @@ package frc.robot;
 
 import static frc.robot.Constants.DrivetrainConstants.kLowerDriveScale;
 import static frc.robot.Constants.DrivetrainConstants.kLowerTurnScale;
+import static frc.robot.Constants.DrivetrainConstants.kUpperDriveScale;
+import static frc.robot.Constants.DrivetrainConstants.kUpperTurnScale;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -44,6 +46,8 @@ public class RobotContainer {
 
 		driver.rightTrigger().onTrue(drivetrain.setSpeedScale(kLowerDriveScale, kLowerTurnScale));
 		driver.rightTrigger().onFalse(drivetrain.setSpeedScale(1, 1));
+		driver.leftTrigger().onTrue(drivetrain.setSpeedScale(kUpperDriveScale, kUpperTurnScale));
+		driver.leftTrigger().onFalse(drivetrain.setSpeedScale(1, 1));
 		//driver.rightTrigger().whileTrue(drivetrain.aimAtTag());
 	}
 
