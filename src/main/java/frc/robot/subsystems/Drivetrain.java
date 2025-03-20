@@ -5,8 +5,6 @@ import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
@@ -16,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Pose;
 import edu.wpi.first.wpilibj.RobotController;
 
 import static edu.wpi.first.units.Units.*;
@@ -28,6 +25,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import au.grapplerobotics.LaserCan;
 
 import static frc.robot.Constants.DrivetrainConstants.*;
+import frc.robot.Pose;
 
 class DriveMotor {
 		SparkMax motor;

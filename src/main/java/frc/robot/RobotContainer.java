@@ -11,10 +11,10 @@ import frc.robot.Constants.ElevatorConstants;
 import frc.robot.subsystems.*;
 
 public class RobotContainer {
-	private final Drivetrain drivetrain = new Drivetrain();
-	private final Elevator elevator = new Elevator();
-	private final Coral coral = new Coral(elevator);
-	private final Algae algae = new Algae();
+	public final Drivetrain drivetrain = new Drivetrain();
+	public final Elevator elevator = new Elevator();
+	public final Coral coral = new Coral(elevator);
+	public final Algae algae = new Algae();
 
 	CommandXboxController driver = new CommandXboxController(0);
 	CommandXboxController operator = new CommandXboxController(1);
@@ -38,9 +38,6 @@ public class RobotContainer {
 		operator.rightBumper().onTrue(elevator.setLevel(1));
 		operator.leftTrigger().onTrue(elevator.setLevel(2));
 		operator.leftBumper().onTrue(elevator.setLevel(3));
-
-		drivetrain.setDefaultCommand(getTeleopCommand());
-
 		//driver.rightTrigger().whileTrue(drivetrain.aimAtTag());
 	}
 
@@ -49,6 +46,7 @@ public class RobotContainer {
 			elevator.setLevel(0),
 			Commands.runEnd(
 				() -> {
+					// this seems to like to spit it out the back
 					//coral.hold();
 					drivetrain.SetVelocity(0.001, 0, 0);
 				},
@@ -62,7 +60,7 @@ public class RobotContainer {
 		);
 	}
 
-	public Command getTeleopCommand() {
+	public Command getDriveCommand() {
 		return drivetrain.ControllerDrive(
 			() -> { return -driver.getLeftY(); },
 			() -> { return driver.getLeftX(); },

@@ -8,20 +8,21 @@ import org.littletonrobotics.junction.*;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-
-import frc.robot.Constants.RobotConstants;
 
 public class Robot extends LoggedRobot {
 	// this gets populated by the dashboard picker ideally
 	private final RobotContainer container = new RobotContainer();
-	private final Command teleopCommand = container.getTeleopCommand();
+	private final Command driveCommand = container.getDriveCommand();
 	private final Command autoCommand = container.getAutonomousCommand();
 
 	public Robot() {
+		// don't complain about no joysticks, it's just annoying
+		DriverStation.silenceJoystickConnectionWarning(true);
+
 		Logger.recordMetadata("ProjectName", "2025-titan");
     	Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA);
 		if (isReal()) {
@@ -58,8 +59,7 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void autonomousInit() {
-		if (teleopCommand != null)
-			teleopCommand.cancel();
+		container.drivetrain.setDefaultCommand(Commands.none());
 
 		if (autoCommand != null)
 			autoCommand.schedule();
@@ -74,8 +74,7 @@ public class Robot extends LoggedRobot {
 		if (autoCommand != null)
 			autoCommand.cancel();
 
-		if (teleopCommand != null) 
-			teleopCommand.schedule();
+		container.drivetrain.setDefaultCommand(driveCommand);
 	}
 
 	@Override
