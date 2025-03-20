@@ -18,7 +18,8 @@ public final class Constants {
 		public static final double kD = 0;
 		public static final double kFF = 0.11911;
 		public static final double kControllerDeadzone = 0.05;
-		public static final double kLowerSpeedScale = 0.001;
+		public static final double kLowerDriveScale = 0.001;
+		public static final double kLowerTurnScale = 0.0005;
 		// Max power RPM
 		public static final double kMaxRPM = 2900;
 		// CAN bus IDs

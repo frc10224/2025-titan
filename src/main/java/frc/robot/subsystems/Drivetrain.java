@@ -87,7 +87,8 @@ public class Drivetrain extends SubsystemBase {
 
 	// sometimes we need to suspend stick input so we can drive with code
 	private boolean pauseController = false;
-	private double speedScale = 1;
+	private double driveScale = 1;
+	private double turnScale = 1;
 
 	// ranging for coral
 	private final LaserCan laser = new LaserCan(kLaserCanId);
@@ -209,13 +210,13 @@ public class Drivetrain extends SubsystemBase {
 			zRotate = Math.pow(zRotate, 3);
 
 			// scale factors
-			xSpeed *= kMaxDriveSpeed * speedScale;
-			ySpeed *= kMaxDriveSpeed * speedScale;
-			zRotate *= kMaxTurnSpeed * speedScale;
+			xSpeed *= kMaxDriveSpeed * driveScale;
+			ySpeed *= kMaxDriveSpeed * driveScale;
+			zRotate *= kMaxTurnSpeed * turnScale;
 
 			// we are omitting the gyro angle here because field relative
 			// control on mecanum frankly is horrible
-			if (speedScale < 1) {
+			if (driveScale < 1) {
 				SetVelocity(xSpeed, ySpeed, zRotate);
 			} else {
 				MecanumDrive.WheelSpeeds ws =
@@ -237,9 +238,10 @@ public class Drivetrain extends SubsystemBase {
 		);
 	}
 
-	public Command setSpeedScale(double scale) {
+	public Command setSpeedScale(double dScale, double tScale) {
 		return Commands.runOnce(() -> {
-			speedScale = scale;
+			driveScale = dScale;
+			turnScale = tScale;
 		}, this);
 	}
 
