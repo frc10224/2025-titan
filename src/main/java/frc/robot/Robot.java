@@ -59,7 +59,7 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void autonomousInit() {
-		container.drivetrain.setDefaultCommand(Commands.none());
+		container.drivetrain.removeDefaultCommand();;
 
 		if (autoCommand != null)
 			autoCommand.schedule();
