@@ -87,6 +87,7 @@ public class Drivetrain extends SubsystemBase {
 
 	// sometimes we need to suspend stick input so we can drive with code
 	private boolean pauseController = false;
+	private double speedScale = 1;
 
 	// ranging for coral
 	private final LaserCan laser = new LaserCan(kLaserCanId);
@@ -133,10 +134,10 @@ public class Drivetrain extends SubsystemBase {
 				// 6.47" left or right and 1.62" into the reef
 				double angleToLeftReef = Math.atan2(
 					pose.getTagY().plus(Inches.of(-6.47)).in(Meters),
-					pose.getTagX().plus(Inches.of(1.62)).in(Meters));
+					pose.getTagX().plus(Inches.of(-1.62)).in(Meters));
 				double angleToRightReef = Math.atan2(
 					pose.getTagY().plus(Inches.of(6.47)).in(Meters),
-					pose.getTagX().plus(Inches.of(1.62)).in(Meters));
+					pose.getTagX().plus(Inches.of(-1.62)).in(Meters));
 
 				// angle at whichever one we are currently closer to being pointed at
 				yawPid.setSetpoint(Math.abs(pose.getYaw() - angleToLeftReef) < Math.abs(pose.getYaw() - angleToRightReef)
@@ -208,19 +209,22 @@ public class Drivetrain extends SubsystemBase {
 			zRotate = Math.pow(zRotate, 3);
 
 			// scale factors
-			xSpeed *= kMaxDriveSpeed;
-			ySpeed *= kMaxDriveSpeed;
-			zRotate *= kMaxTurnSpeed;
+			xSpeed *= kMaxDriveSpeed * speedScale;
+			ySpeed *= kMaxDriveSpeed * speedScale;
+			zRotate *= kMaxTurnSpeed * speedScale;
 
 			// we are omitting the gyro angle here because field relative
 			// control on mecanum frankly is horrible
-			MecanumDrive.WheelSpeeds ws =
-				MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate);
-
-			motorLf.setVoltage(Volts.of(-ws.frontLeft * RobotController.getBatteryVoltage()));
-			motorRf.setVoltage(Volts.of(ws.frontRight * RobotController.getBatteryVoltage()));
-			motorLb.setVoltage(Volts.of(-ws.rearLeft * RobotController.getBatteryVoltage()));
-			motorRb.setVoltage(Volts.of(ws.rearRight * RobotController.getBatteryVoltage()));
+			if (speedScale < 1) {
+				SetVelocity(xSpeed, ySpeed, zRotate);
+			} else {
+				MecanumDrive.WheelSpeeds ws =
+					MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate);
+				motorLf.setVoltage(Volts.of(-ws.frontLeft * RobotController.getBatteryVoltage()));
+				motorRf.setVoltage(Volts.of(ws.frontRight * RobotController.getBatteryVoltage()));
+				motorLb.setVoltage(Volts.of(-ws.rearLeft * RobotController.getBatteryVoltage()));
+				motorRb.setVoltage(Volts.of(ws.rearRight * RobotController.getBatteryVoltage()));
+			}
 		}, this);
 	}
 
@@ -231,6 +235,12 @@ public class Drivetrain extends SubsystemBase {
 			motorLb.getWheelDistance().unaryMinus(),
 			motorRb.getWheelDistance()
 		);
+	}
+
+	public Command setSpeedScale(double scale) {
+		return Commands.runOnce(() -> {
+			speedScale = scale;
+		}, this);
 	}
 
 	public Command lineupL4() {

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import static frc.robot.Constants.DrivetrainConstants.kLowerSpeedScale;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -21,7 +23,7 @@ public class RobotContainer {
 
 	public RobotContainer() {
 		// set controller binds
-		driver.rightTrigger().whileTrue(drivetrain.aimAtTag());
+		//driver.rightTrigger().whileTrue(drivetrain.aimAtTag());
 
 		operator.povLeft().whileTrue(algae.collect());
 		operator.povRight().whileTrue(algae.spit());
@@ -38,6 +40,9 @@ public class RobotContainer {
 		operator.rightBumper().onTrue(elevator.setLevel(1));
 		operator.leftTrigger().onTrue(elevator.setLevel(2));
 		operator.leftBumper().onTrue(elevator.setLevel(3));
+
+		driver.rightTrigger().onTrue(drivetrain.setSpeedScale(kLowerSpeedScale));
+		driver.rightTrigger().onFalse(drivetrain.setSpeedScale(1));
 		//driver.rightTrigger().whileTrue(drivetrain.aimAtTag());
 	}
 
