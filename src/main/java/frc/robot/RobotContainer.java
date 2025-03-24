@@ -20,6 +20,7 @@ public class RobotContainer {
 	public final Elevator elevator = new Elevator();
 	public final Coral coral = new Coral(elevator);
 	public final Algae algae = new Algae();
+	public final Climb climb = new Climb();
 
 	CommandXboxController driver = new CommandXboxController(0);
 	CommandXboxController operator = new CommandXboxController(1);
@@ -49,6 +50,9 @@ public class RobotContainer {
 		driver.leftTrigger().onTrue(drivetrain.setSpeedScale(kUpperDriveScale, kUpperTurnScale));
 		driver.leftTrigger().onFalse(drivetrain.setSpeedScale(1, 1));
 		//driver.rightTrigger().whileTrue(drivetrain.aimAtTag());
+
+		//driver.a().onTrue(climb.changePosition());
+		driver.a().whileTrue(climb.changePosition());
 	}
 
 	public Command getAutonomousCommand() {
