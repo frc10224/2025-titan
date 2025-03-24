@@ -97,7 +97,8 @@ public class Elevator extends SubsystemBase {
 				setpoint = turns;
 				leftMotor.getClosedLoopController()
 					.setReference(turns, SparkMax.ControlType.kPosition);
-			}
+			},
+			this
 		);
 	}
 
@@ -108,7 +109,8 @@ public class Elevator extends SubsystemBase {
 				leftMotor.set(0);
 				leftMotor.getEncoder().setPosition(0);
 				boreEncoder.reset();
-			}
+			},
+			this
 		);
 	}
 
@@ -117,7 +119,8 @@ public class Elevator extends SubsystemBase {
 			setpoint += turns;
 			leftMotor.getClosedLoopController()
 				.setReference(setpoint, SparkMax.ControlType.kPosition);
-			}
+			},
+			this
 		);
 	}
 
