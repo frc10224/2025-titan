@@ -57,14 +57,18 @@ public final class Constants {
 	public static final class ElevatorConstants {
 		public static final int kLeftMotorId = 6;
 		public static final int kRightMotorId = 5;
-		public static final double kP = 0.5; // 0.086188;
-		public static final double kD = 0.92;
-		public static final double kFF = 0.0869;   
+		public static final double kP = 0.88599; // 0.086188;
+		public static final double kD = 8.9956;
+		public static final double kS = 0.15895;
+		public static final double kG = 0.44337;
+		public static final double kV = 0.12518;
+		public static final double kMaxVelRPS = 12;
+		public static final double kMaxAccelRPSPS = 5;
 		public static final double kTopLimitSpinCount = 89;
 		public static final int kEncoderChA = 8;
 		public static final int kEncoderChB = 9; 
 		public static final double kGearboxRatio = 1./20.;
-		public static final double[] kElevatorLevels = { 0, 0.5, 1.67, 3.78 };
+		public static final double[] kElevatorLevels = { 0, 0.5, 1.67, 4.4 };
 		public static final double kAlgaeHeight2 = 3.05;
 		public static final double kAlgaeHeight1 = 1.85;
 	}
