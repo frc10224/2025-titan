@@ -1,0 +1,10 @@
+[
+	{
+		"label": "Build Robot Code",
+		"command": "./gradlew build"
+	},
+	{
+		"label": "Deploy Robot Code",
+		"command": "./gradlew deploy"
+	}
+]
