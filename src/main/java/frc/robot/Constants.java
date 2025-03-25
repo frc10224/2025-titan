@@ -87,6 +87,11 @@ public final class Constants {
 		public static final int kLeftMotorId = 10;
 		public static final int kRightMotorId = 9;
 	}
+
+	public static final class ClimbConstants {
+		public static final int kWinchMotorId = 13;
+		public static final double kHoldPosition = 6;
+	}
 }
 
 // vi: sw=4 ts=4 noet tw=80 cc=80

@@ -42,14 +42,16 @@ public class Algae extends SubsystemBase {
 	public Command collect() {
 		return Commands.runEnd(
 			() -> { leftMotor.set(0.3);},
-			() -> { leftMotor.set(0); }
+			() -> { leftMotor.set(0); },
+			this
 		);
 	}
 	
 	public Command spit() {
 		return Commands.runEnd(
 			() -> { leftMotor.set(-0.3); },
-			() -> { leftMotor.set(0); }
+			() -> { leftMotor.set(0); },
+			this
 		);
 	}
 }

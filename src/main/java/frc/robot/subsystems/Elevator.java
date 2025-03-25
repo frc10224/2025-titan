@@ -115,8 +115,7 @@ public class Elevator extends SubsystemBase {
 				if (isLocked) return;
 				goal.position = turns;
 				goal.velocity = 0;
-			}
-		);
+			}, this);
 	}
 
 	public Command zero() {
@@ -126,14 +125,15 @@ public class Elevator extends SubsystemBase {
 				leftMotor.set(0);
 				leftMotor.getEncoder().setPosition(0);
 				boreEncoder.reset();
-			}
+			},
+			this
 		);
 	}
 
 	public Command adjustHeight(double turns) {
 		return Commands.runOnce(() -> {
 			goal.position += turns;
-		});
+		}, this);
 	}
 
 	public Command setLevel(int level) {
