@@ -52,7 +52,8 @@ public class RobotContainer {
 		//driver.rightTrigger().whileTrue(drivetrain.aimAtTag());
 
 		//driver.a().onTrue(climb.changePosition());
-		driver.a().whileTrue(climb.changePosition());
+		driver.x().whileTrue(climb.changePosition(1));
+		driver.y().whileTrue(climb.changePosition(-1));
 	}
 
 	public Command getAutonomousCommand() {

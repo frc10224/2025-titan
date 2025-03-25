@@ -87,6 +87,7 @@ public final class Constants {
 	public static final class ClimbConstants {
 		public static final int kWinchMotorId = 13;
 		public static final double kHoldPosition = 6;
+		public static final double kSpinPercentage = 0.25;
 	}
 }
 

@@ -52,10 +52,10 @@ public class Climb extends SubsystemBase {
     );
   } */
 
-  public Command changePosition() {
+  public Command changePosition(int direction) {
     return Commands.runEnd(
       () -> {
-        motor.set(0.1);
+        motor.set(kSpinPercentage * direction);
       },
       () -> {
         motor.set(0);
