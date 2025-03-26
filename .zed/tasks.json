@@ -5,6 +5,6 @@
 	},
 	{
 		"label": "Deploy Robot Code",
-		"command": "./gradlew deploy"
+		"command": "./gradlew deploy -PteamNumber=10224 --offline"
 	}
 ]
