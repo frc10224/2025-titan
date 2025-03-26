@@ -49,7 +49,7 @@ class DriveMotor {
 				// settings
 				SparkMax.PersistMode.kPersistParameters);
 		}
-		
+
 		Distance getWheelDistance() {
 			return kWheelRadius
 				.times(Math.PI)
@@ -75,7 +75,7 @@ class DriveMotor {
 					.voltage(Volts.of(motor.get() *
 								RobotController.getBatteryVoltage()))
 					.angularPosition(Revolutions.of(encoder.getPosition()))
-					.angularVelocity(getEncoderVelocity());  
+					.angularVelocity(getEncoderVelocity());
 		}
 };
 
@@ -83,17 +83,18 @@ public class Drivetrain extends SubsystemBase {
 	private final DriveMotor motorLf = new DriveMotor(kMotorId_LF);
 	private final DriveMotor motorLb = new DriveMotor(kMotorId_LB);
 	private final DriveMotor motorRf = new DriveMotor(kMotorId_RF);
-	private final DriveMotor motorRb = new DriveMotor(kMotorId_RB); 
+	private final DriveMotor motorRb = new DriveMotor(kMotorId_RB);
 
 	// sometimes we need to suspend stick input so we can drive with code
 	private boolean pauseController = false;
+	// other stuff for fast/slow
 	private double driveScale = 1;
 	private double turnScale = 1;
 
-	// ranging for coral
-	private final LaserCan laser = new LaserCan(kLaserCanId);
-	private final PIDController rangeController =
-		new PIDController(kLaserDriveP, 0, kLaserDriveD);
+	// for auto move stuff
+	private PIDController yawPid = new PIDController(kYawP, 0, kYawD);
+	private PIDController xPid = new PIDController(kMoveP, 0, kMoveD);
+	private PIDController yPid = new PIDController(kMoveP, 0, kMoveD);
 
 	private final SysIdRoutine sysidRoutine = new SysIdRoutine(
 		new SysIdRoutine.Config(null, null, Seconds.of(3), null),
@@ -113,9 +114,9 @@ public class Drivetrain extends SubsystemBase {
 			this
 		)
 	);
-		
+
 	public Drivetrain() {
-		rangeController.setSetpoint(kL4ScoringDistance.in(Millimeters));
+		yawPid.setSetpoint(0.0);
 	}
 
 	@Override
@@ -123,9 +124,7 @@ public class Drivetrain extends SubsystemBase {
 		Logger.recordOutput("Drivetrain/wheelPositions", getWheelPositions());
 	}
 
-	private PIDController yawPid = new PIDController(kYawP, 0, kYawD);
 	public Command aimAtTag() {
-		yawPid.setTolerance(0.0);
 		return Commands.sequence(
 			Commands.runOnce(() -> {
 				Pose pose = Pose.getInstance();
@@ -148,22 +147,31 @@ public class Drivetrain extends SubsystemBase {
 			}),
 			Commands.runEnd(() -> {
 				if (Pose.getInstance().getRobotToTag() == null) {
-					SetVelocity(0, 0, 0);
+					setDriveVelocity(0, 0, 0);
 					return;
 				};
-				SetVelocity(0, 0, -yawPid.calculate(Pose.getInstance().getYaw()));
-			}, () -> SetVelocity(0, 0, 0), this) // when we are done stop
+				setDriveVelocity(0, 0, -yawPid.calculate(Pose.getInstance().getYaw()));
+			}, () -> setDriveVelocity(0, 0, 0), this) // when we are done stop
 		);
 		//.until(() -> yawPid.atSetpoint());
 	}
 
-	public void SetVelocity(double xSpeed, double ySpeed, double zRotate) {
+	public void setDriveVelocity(double xSpeed, double ySpeed, double zRotate) {
 		MecanumDrive.WheelSpeeds ws =
 			MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate);
 		motorLf.setVelocity(-ws.frontLeft);
 		motorLb.setVelocity(-ws.rearLeft);
 		motorRf.setVelocity(ws.frontRight);
 		motorRb.setVelocity(ws.rearRight);
+	}
+
+	public void setDriveVoltage(double xSpeed, double ySpeed, double zRotate) {
+		MecanumDrive.WheelSpeeds ws =
+			MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate);
+		motorLf.setVoltage(Volts.of(-ws.frontLeft * RobotController.getBatteryVoltage()));
+		motorRf.setVoltage(Volts.of(ws.frontRight * RobotController.getBatteryVoltage()));
+		motorLb.setVoltage(Volts.of(-ws.rearLeft * RobotController.getBatteryVoltage()));
+		motorRb.setVoltage(Volts.of(ws.rearRight * RobotController.getBatteryVoltage()));
 	}
 
 	public Command ControllerDrive(DoubleSupplier XSpeed, DoubleSupplier YSpeed,
@@ -184,7 +192,7 @@ public class Drivetrain extends SubsystemBase {
 			//
 			// becomes
 			// 0.0 ==================== 0.85
-		
+
 			if (Math.abs(xSpeed) < kControllerDeadzone) xSpeed = 0;
 			else xSpeed -= Math.signum(xSpeed) * kControllerDeadzone;
 
@@ -193,8 +201,8 @@ public class Drivetrain extends SubsystemBase {
 
 			if (Math.abs(zRotate) < kControllerDeadzone) zRotate = 0;
 			else zRotate -= Math.signum(zRotate) * kControllerDeadzone;
-			
-			// now that we are operating in that range we want from 0 to 
+
+			// now that we are operating in that range we want from 0 to
 			// 1 - deadzone we can scale it back up so we are back to the
 			// range 0 to 1
 			xSpeed /= 1. - kControllerDeadzone;
@@ -217,14 +225,9 @@ public class Drivetrain extends SubsystemBase {
 			// we are omitting the gyro angle here because field relative
 			// control on mecanum frankly is horrible
 			if (driveScale < 1) {
-				SetVelocity(xSpeed, ySpeed, zRotate);
+				setDriveVelocity(xSpeed, ySpeed, zRotate);
 			} else {
-				MecanumDrive.WheelSpeeds ws =
-					MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate);
-				motorLf.setVoltage(Volts.of(-ws.frontLeft * RobotController.getBatteryVoltage()));
-				motorRf.setVoltage(Volts.of(ws.frontRight * RobotController.getBatteryVoltage()));
-				motorLb.setVoltage(Volts.of(-ws.rearLeft * RobotController.getBatteryVoltage()));
-				motorRb.setVoltage(Volts.of(ws.rearRight * RobotController.getBatteryVoltage()));
+				setDriveVoltage(xSpeed, ySpeed, zRotate);
 			}
 		}, this);
 	}
@@ -245,21 +248,10 @@ public class Drivetrain extends SubsystemBase {
 		}, this);
 	}
 
-	public Command lineupL4() {
-		return Commands.runEnd(() -> {
-			pauseController = true;
-			double mm = laser.getMeasurement().distance_mm;
-			double pid_output = rangeController.calculate(mm);
-			SetVelocity(pid_output, 0, 0);
-		}, () -> {
-			pauseController = false;
-			SetVelocity(0, 0, 0);
-		}, this);
-	}
-
 	public Command SysIdDynamic(Direction direction) {
 		return sysidRoutine.dynamic(direction);
 	}
+
 	public Command SysIdQuasistatic(Direction direction) {
 		return sysidRoutine.quasistatic(direction);
 	}

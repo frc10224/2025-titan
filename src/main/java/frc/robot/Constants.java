@@ -34,16 +34,13 @@ public final class Constants {
 		public static final Translation2d kFrontRightLocation = new Translation2d(Inches.of(14), Inches.of(-10.5));
 		public static final Translation2d kBackLeftLocation = new Translation2d(Inches.of(-14), Inches.of(10.5));
 		public static final Translation2d kBackRightLocation = new Translation2d(Inches.of(-14), Inches.of(-10.5));
-		// for the L4 distance auto
-		public static final int kLaserCanId = 11;
-		public static final double kLaserDriveP = 0.0001;
-		public static final double kLaserDriveD = 1;
-		public static final Distance kL4ScoringDistance = Centimeters.of(8);
 		public static final double kYawP = 0.004;
 		public static final double kYawD = 0.001;
+		public static final double kMoveP = 0.004;
+		public static final double kMoveD = 0.001;
 	};
 
-	public static final class PoseConstants { 
+	public static final class PoseConstants {
 		// +X is forward, +Y is left, +Z is up
 		// This is the transform FROM the camera TO the origin
 		public static final Transform3d kFrontCameraLocation = new Transform3d(
@@ -66,7 +63,7 @@ public final class Constants {
 		public static final double kMaxAccelRPSPS = 5;
 		public static final double kTopLimitSpinCount = 89;
 		public static final int kEncoderChA = 8;
-		public static final int kEncoderChB = 9; 
+		public static final int kEncoderChB = 9;
 		public static final double kGearboxRatio = 1./20.;
 		public static final double[] kElevatorLevels = { 0, 0.5, 1.67, 4.4 };
 		public static final double kAlgaeHeight2 = 3.05;

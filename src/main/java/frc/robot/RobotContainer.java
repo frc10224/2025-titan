@@ -39,7 +39,7 @@ public class RobotContainer {
 		driver.b().whileTrue(coral.spit());
 		operator.x().whileTrue(coral.slurp());
 		operator.y().whileTrue(elevator.zero());
-		
+
 		operator.rightTrigger().onTrue(elevator.setLevel(0));
 		operator.rightBumper().onTrue(elevator.setLevel(1));
 		operator.leftTrigger().onTrue(elevator.setLevel(2));
@@ -64,9 +64,9 @@ public class RobotContainer {
 				() -> {
 					// this seems to like to spit it out the back
 					//coral.hold();
-					drivetrain.SetVelocity(0.001, 0, 0);
+					drivetrain.setDriveVelocity(0.001, 0, 0);
 				},
-				() -> drivetrain.SetVelocity(0, 0, 0)
+				() -> drivetrain.setDriveVelocity(0, 0, 0)
 			).withTimeout(2.1),
 			elevator.setLevel(1),
 			Commands.waitSeconds(4),
@@ -78,9 +78,9 @@ public class RobotContainer {
 
 	public Command getDriveCommand() {
 		return drivetrain.ControllerDrive(
-			() -> { return -driver.getLeftY(); },
-			() -> { return driver.getLeftX(); },
-			() -> { return driver.getRightX(); }
+			() -> -driver.getLeftY(),
+			() -> driver.getLeftX(),
+			() -> driver.getRightX()
 		);
 	}
 }

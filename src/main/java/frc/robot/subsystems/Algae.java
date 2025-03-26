@@ -14,10 +14,10 @@ import org.littletonrobotics.junction.Logger;
 public class Algae extends SubsystemBase {
 	private final SparkMax leftMotor =
 		new SparkMax(kLeftMotorId, SparkMax.MotorType.kBrushless);
-		
+
 	private final SparkMax rightMotor =
 		new SparkMax(kRightMotorId, SparkMax.MotorType.kBrushless);
-	
+
 	public Algae() {
 		SparkMaxConfig config = new SparkMaxConfig();
 		config.idleMode(SparkMaxConfig.IdleMode.kBrake);
@@ -41,16 +41,16 @@ public class Algae extends SubsystemBase {
 
 	public Command collect() {
 		return Commands.runEnd(
-			() -> { leftMotor.set(0.3);},
-			() -> { leftMotor.set(0); },
+			() -> leftMotor.set(0.3),
+			() -> leftMotor.set(0),
 			this
 		);
 	}
-	
+
 	public Command spit() {
 		return Commands.runEnd(
-			() -> { leftMotor.set(-0.3); },
-			() -> { leftMotor.set(0); },
+			() -> leftMotor.set(-0.3),
+			() -> leftMotor.set(0),
 			this
 		);
 	}
