@@ -115,7 +115,7 @@ public class Coral extends SubsystemBase {
 	public Command spit() {
 		return Commands.runEnd(
 			() -> {
-				if (elevator.setpoint != ElevatorConstants.kElevatorLevels[3])
+				if (elevator.setpoint() != ElevatorConstants.kElevatorLevels[3])
 					leftMotor.set(0.1);
 				else
 					leftMotor.set(0.05);
