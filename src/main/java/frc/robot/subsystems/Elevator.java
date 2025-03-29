@@ -40,6 +40,7 @@ public class Elevator extends SubsystemBase {
 		new TrapezoidProfile.State(leftMotor.getEncoder().getPosition(), leftMotor.getEncoder().getVelocity());
 
 	public boolean isLocked = false;
+	public boolean doClosedLoop = true;
 	
 	private SysIdRoutine sysidRoutine = new SysIdRoutine(
 			new SysIdRoutine.Config(Volts.of(2).per(Second), Volts.of(7), null, null),
@@ -102,12 +103,14 @@ public class Elevator extends SubsystemBase {
 			leftMotor.getEncoder().setPosition(0);
 		}
 
-		// run the closed loop
-		setpoint = trapezoidProfile.calculate(0.05, setpoint, goal);
-		double ff = elevatorFeedforward.calculate(setpoint.velocity);
-		leftMotor.getClosedLoopController()
-			.setReference(setpoint.position, ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
-		Logger.recordOutput("Elevator/Feedforward", ff);
+		if (doClosedLoop) {
+			// run the closed loop
+			setpoint = trapezoidProfile.calculate(0.05, setpoint, goal);
+			double ff = elevatorFeedforward.calculate(setpoint.velocity);
+			leftMotor.getClosedLoopController()
+				.setReference(setpoint.position, ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
+			Logger.recordOutput("Elevator/Feedforward", ff);
+		}
 	}
 
 	public Command setPosition(double turns) {
@@ -120,8 +123,12 @@ public class Elevator extends SubsystemBase {
 
 	public Command zero() {
 		return Commands.startEnd(
-			() -> { leftMotor.set(-0.05); },
 			() -> {
+				leftMotor.set(-0.05);
+				doClosedLoop = false;
+			},
+			() -> {
+				doClosedLoop = true;
 				leftMotor.set(0);
 				leftMotor.getEncoder().setPosition(0);
 				boreEncoder.reset();
