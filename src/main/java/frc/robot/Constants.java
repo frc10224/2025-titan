@@ -92,6 +92,7 @@ public final class Constants {
 		public static final int kWinchMotorId = 13;
 		public static final double kHoldPosition = 6;
 		public static final double kSpinPercentage = 0.25;
+		public static final int kRampMotorId = 22;
 	}
 }
 

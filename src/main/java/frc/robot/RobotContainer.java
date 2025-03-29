@@ -54,6 +54,7 @@ public class RobotContainer {
 		//driver.a().onTrue(climb.changePosition());
 		driver.x().whileTrue(climb.changePosition(1));
 		driver.y().whileTrue(climb.changePosition(-1));
+		driver.povLeft().onTrue(climb.releaseTray());
 	}
 
 	public Command getAutonomousCommand() {
