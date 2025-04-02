@@ -41,7 +41,7 @@ public class Elevator extends SubsystemBase {
 
 	public boolean isLocked = false;
 	public boolean doClosedLoop = true;
-	
+
 	private SysIdRoutine sysidRoutine = new SysIdRoutine(
 			new SysIdRoutine.Config(Volts.of(2).per(Second), Volts.of(7), null, null),
 			new SysIdRoutine.Mechanism(
@@ -55,13 +55,13 @@ public class Elevator extends SubsystemBase {
 						.voltage(Volts.of(leftMotor.getAppliedOutput() *
 									RobotController.getBatteryVoltage()))
 						.angularPosition(Revolutions.of(enc.getPosition()))
-						.angularVelocity(RevolutionsPerSecond.of(enc.getVelocity()));  
+						.angularVelocity(RevolutionsPerSecond.of(enc.getVelocity()));
 				},
 				this
 			)
 	);
 	private Encoder boreEncoder = new Encoder(kEncoderChA, kEncoderChB);
-	
+
 	public Elevator() {
 		SparkMaxConfig config = new SparkMaxConfig();
 
@@ -81,7 +81,7 @@ public class Elevator extends SubsystemBase {
 		rightMotor.configure(config,
 			SparkMax.ResetMode.kResetSafeParameters,
 			SparkMax.PersistMode.kPersistParameters);
-	
+
 		// rev bore encoder
 		boreEncoder.setDistancePerPulse(1./2048.);
 		boreEncoder.setSamplesToAverage(5);
@@ -99,14 +99,15 @@ public class Elevator extends SubsystemBase {
 		Logger.recordOutput("Elevator/IsLocked", isLocked);
 		// zero the neo encoder with the bore encoder, seems to help fix
 		// weird drift issues
-		if (Math.abs(boreEncoder.getDistance()) < 0.02) {
+		// HACKHACK!
+		if (Math.abs(boreEncoder.getDistance()) < 0.01) {
 			leftMotor.getEncoder().setPosition(0);
 		}
 
 		if (doClosedLoop) {
 			// run the closed loop
-			setpoint = trapezoidProfile.calculate(0.05, setpoint, goal);
-			double ff = elevatorFeedforward.calculate(setpoint.velocity);
+			setpoint = trapezoidProfile.calculate(0.02, setpoint, goal);
+			double ff = elevatorFeedforward.calculateWithVelocities(leftMotor.getEncoder().getVelocity(), setpoint.velocity);
 			leftMotor.getClosedLoopController()
 				.setReference(setpoint.position, ControlType.kPosition, ClosedLoopSlot.kSlot0, ff);
 			Logger.recordOutput("Elevator/Feedforward", ff);
