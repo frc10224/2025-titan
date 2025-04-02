@@ -1,10 +1,10 @@
 [
 	{
 		"label": "Build Robot Code",
-		"command": "./gradlew build"
+		"command": "./gradlew build --console=rich"
 	},
 	{
 		"label": "Deploy Robot Code",
-		"command": "./gradlew deploy -PteamNumber=10224 --offline"
+		"command": "./gradlew deploy --console=rich -PteamNumber=10224 --offline"
 	}
 ]
