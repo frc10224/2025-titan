@@ -12,6 +12,8 @@ import edu.wpi.first.units.measure.Distance;
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.Constants.PoseConstants.*;
 
+import java.util.Timer;
+
 // this may not be a "subsystem" but it does contain a lot of things that
 // should be self contained
 
@@ -26,14 +28,19 @@ public final class Pose {
         new PhotonCamera("front"),
         //new PhotonCamera("back"),
     };
-    
+
     private Transform3d robotToTag = null;
     private LinearFilter yawFilter = LinearFilter.movingAverage(5);
     private LinearFilter xFilter = LinearFilter.movingAverage(5);
     private LinearFilter yFilter = LinearFilter.movingAverage(5);
+    private int staleMs = 0;
 
     public Transform3d getRobotToTag() {
         return robotToTag;
+    }
+
+    public int getStaleTimeMs() {
+    	return staleMs;
     }
 
     public double getYaw() {
@@ -74,13 +81,16 @@ public final class Pose {
             }
         }
 
+        staleMs += 20;
         if (finalTarget != null && tagDist < 100) {
             robotToTag = finalTarget.getBestCameraToTarget().inverse().plus(kFrontCameraLocation);
             Logger.recordOutput("Pose/Tag Distance", translationLength(getTagX(), getTagY()));
             Logger.recordOutput("Pose/Yaw diff from tag", yawFilter.calculate(robotToTag.getRotation().getZ()));
             Logger.recordOutput("Pose/Tag X Distance", xFilter.calculate(robotToTag.getX()));
             Logger.recordOutput("Pose/Tag Y Distance", yFilter.calculate(robotToTag.getY()));
+            staleMs = 0;
         }
+        Logger.recordOutput("Pose/Last pose ago ms", staleMs);
     }
 }
 

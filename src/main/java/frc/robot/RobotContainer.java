@@ -9,6 +9,11 @@ import static frc.robot.Constants.DrivetrainConstants.kLowerTurnScale;
 import static frc.robot.Constants.DrivetrainConstants.kUpperDriveScale;
 import static frc.robot.Constants.DrivetrainConstants.kUpperTurnScale;
 
+import java.util.Map;
+
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -22,12 +27,53 @@ public class RobotContainer {
 	public final Algae algae = new Algae();
 	public final Climb climb = new Climb();
 
+	LoggedDashboardChooser<Command> autoPicker = new LoggedDashboardChooser<>("auto picker");
+
+	Map<String, Command> autos = Map.of(
+		".7 sec drive right stalk",
+		Commands.sequence(
+			elevator.setLevel(0),
+			Commands.runEnd(
+				() -> {
+					// this seems to like to spit it out the back
+					//coral.hold();
+					drivetrain.setDriveVelocity(0.001, 0, 0, 0);
+				},
+				() -> drivetrain.setDriveVelocity(0, 0, 0, 0)
+			).withTimeout(0.7),
+			drivetrain.autoAlign(),
+			elevator.setLevel(3),
+			Commands.waitSeconds(2),
+			coral.spit().withTimeout(1),
+			elevator.setLevel(0)
+		),
+		"2 sec drive right stalk",
+		Commands.sequence(
+			elevator.setLevel(0),
+			Commands.runEnd(
+				() -> {
+					// this seems to like to spit it out the back
+					//coral.hold();
+					drivetrain.setDriveVelocity(0.001, 0, 0, 0);
+				},
+				() -> drivetrain.setDriveVelocity(0, 0, 0, 0)
+			).withTimeout(2),
+			drivetrain.autoAlign(),
+			elevator.setLevel(3),
+			Commands.waitSeconds(2),
+			coral.spit().withTimeout(1),
+			elevator.setLevel(0)
+		)
+	);
+
 	CommandXboxController driver = new CommandXboxController(0);
 	CommandXboxController operator = new CommandXboxController(1);
 
 	public RobotContainer() {
 		// set controller binds
 		//driver.rightTrigger().whileTrue(drivetrain.aimAtTag());
+
+		autos.forEach(autoPicker::addOption);
 
 		operator.povLeft().whileTrue(algae.collect());
 		operator.povRight().whileTrue(algae.spit());
@@ -49,31 +95,23 @@ public class RobotContainer {
 		driver.rightTrigger().onFalse(drivetrain.setSpeedScale(1, 1));
 		driver.leftTrigger().onTrue(drivetrain.setSpeedScale(kUpperDriveScale, kUpperTurnScale));
 		driver.leftTrigger().onFalse(drivetrain.setSpeedScale(1, 1));
-		//driver.rightTrigger().whileTrue(drivetrain.aimAtTag());
+		driver.rightBumper().whileTrue(drivetrain.autoAlign());
 
 		//driver.a().onTrue(climb.changePosition());
 		driver.x().whileTrue(climb.changePosition(1));
 		driver.y().whileTrue(climb.changePosition(-1));
-		driver.povLeft().onTrue(climb.releaseTray());
+		//driver.povLeft().onTrue(climb.releaseTray());
+		driver.povRight().onTrue(climb.returnServo());
+		driver.povUp().onTrue(climb.extend());
+		//driver.povDown().whileTrue(climb.pull());
 	}
 
 	public Command getAutonomousCommand() {
-		return Commands.sequence(
-			elevator.setLevel(0),
-			Commands.runEnd(
-				() -> {
-					// this seems to like to spit it out the back
-					//coral.hold();
-					drivetrain.setDriveVelocity(0.001, 0, 0);
-				},
-				() -> drivetrain.setDriveVelocity(0, 0, 0)
-			).withTimeout(2.1),
-			elevator.setLevel(1),
-			Commands.waitSeconds(4),
-			coral.spit().withTimeout(3),
-			Commands.waitSeconds(2),
-			elevator.setLevel(0)
-		);
+		return autoPicker.get();
+	}
+
+	public String getAutoName() {
+		return autoPicker.getSendableChooser().getSelected();
 	}
 
 	public Command getDriveCommand() {

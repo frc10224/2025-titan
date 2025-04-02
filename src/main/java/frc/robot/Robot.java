@@ -10,14 +10,12 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class Robot extends LoggedRobot {
 	// this gets populated by the dashboard picker ideally
 	private final RobotContainer container = new RobotContainer();
 	private final Command driveCommand = container.getDriveCommand();
-	private final Command autoCommand = container.getAutonomousCommand();
 
 	public Robot() {
 		// don't complain about no joysticks, it's just annoying
@@ -59,10 +57,12 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void autonomousInit() {
-		container.drivetrain.removeDefaultCommand();;
+		container.drivetrain.removeDefaultCommand();
 
-		if (autoCommand != null)
-			autoCommand.schedule();
+		if (container.getAutonomousCommand() != null) {
+			System.out.println("RUNNING AUTO " + container.getAutoName());
+			container.getAutonomousCommand().schedule();
+		}
 	}
 
 	/** This function is called periodically during autonomous. */
@@ -71,14 +71,14 @@ public class Robot extends LoggedRobot {
 
 	@Override
 	public void teleopInit() {
-		if (autoCommand != null)
-			autoCommand.cancel();
+		if (container.getAutonomousCommand() != null)
+			container.getAutonomousCommand().cancel();
 
 		container.drivetrain.setDefaultCommand(driveCommand);
 	}
 
 	@Override
-	public void teleopPeriodic() {} 
+	public void teleopPeriodic() {}
 
 	@Override
 	public void testInit() {

@@ -34,18 +34,20 @@ public final class Constants {
 		public static final Translation2d kFrontRightLocation = new Translation2d(Inches.of(14), Inches.of(-10.5));
 		public static final Translation2d kBackLeftLocation = new Translation2d(Inches.of(-14), Inches.of(10.5));
 		public static final Translation2d kBackRightLocation = new Translation2d(Inches.of(-14), Inches.of(-10.5));
-		public static final double kYawP = 0.004;
-		public static final double kYawD = 0.001;
-		public static final double kMoveP = 0.004;
-		public static final double kMoveD = 0.001;
+		public static final double kYawP = 0.003;
+		public static final double kYawD = 0.0001;
+		public static final double kDriveP = 0.0023;
+		public static final double kDriveD = 0.001;
+		public static final double kStrafeP = 0.004;
+		public static final double kStrafeD = 0.001;
 	};
 
 	public static final class PoseConstants {
 		// +X is forward, +Y is left, +Z is up
 		// This is the transform FROM the camera TO the origin
 		public static final Transform3d kFrontCameraLocation = new Transform3d(
-			new Translation3d(Inches.of(7.08), Inches.of(-10.4), Inches.of(-25.75)),
-			new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(13.6 + 180.0))
+			new Translation3d(Inches.of(7.08), Inches.of(-10), Inches.of(-25.75)),
+			new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(13.3 + 180.0))
 		);
 		public static final double kVisPositionStdev = 0.02;
 		public static final double kVisYawStdev = 0;
@@ -54,20 +56,20 @@ public final class Constants {
 	public static final class ElevatorConstants {
 		public static final int kLeftMotorId = 6;
 		public static final int kRightMotorId = 5;
-		public static final double kP = 0.88599; // 0.086188;
-		public static final double kD = 8.9956;
+		public static final double kP = 1.7; // 0.88599; // 0.086188;
+		public static final double kD = 0; // 8.9956;
 		public static final double kS = 0.15895;
 		public static final double kG = 0.44337;
 		public static final double kV = 0.12518;
 		public static final double kMaxVelRPS = 12;
-		public static final double kMaxAccelRPSPS = 5;
+		public static final double kMaxAccelRPSPS = 22;
 		public static final double kTopLimitSpinCount = 89;
 		public static final int kEncoderChA = 8;
 		public static final int kEncoderChB = 9;
 		public static final double kGearboxRatio = 1./20.;
-		public static final double[] kElevatorLevels = { 0, 0.5, 1.67, 4.4 };
-		public static final double kAlgaeHeight2 = 3.05;
-		public static final double kAlgaeHeight1 = 1.85;
+		public static final double[] kElevatorLevels = { 0, 0.5, 1.82, 4.4 };
+		public static final double kAlgaeHeight2 = 3.5;
+		public static final double kAlgaeHeight1 = 2.2;
 	}
 
 	public static final class CoralConstants {
@@ -88,8 +90,10 @@ public final class Constants {
 	public static final class ClimbConstants {
 		public static final int kWinchMotorId = 13;
 		public static final double kHoldPosition = 6;
-		public static final double kSpinPercentage = 0.25;
-		public static final int kRampMotorId = 22;
+		public static final double kSpinPercentage = 1;
+		public static final int kRampMotorId = 21;
+		public static final double kClimberOutValue = -266;
+		public static final double kClimberUpValue = 160;
 	}
 }
 

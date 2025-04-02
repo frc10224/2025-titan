@@ -5,6 +5,7 @@ import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
@@ -21,8 +22,6 @@ import static edu.wpi.first.units.Units.*;
 import com.revrobotics.spark.*;
 import com.revrobotics.spark.SparkBase.*;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
-import au.grapplerobotics.LaserCan;
 
 import static frc.robot.Constants.DrivetrainConstants.*;
 import frc.robot.Pose;
@@ -93,8 +92,8 @@ public class Drivetrain extends SubsystemBase {
 
 	// for auto move stuff
 	private PIDController yawPid = new PIDController(kYawP, 0, kYawD);
-	private PIDController xPid = new PIDController(kMoveP, 0, kMoveD);
-	private PIDController yPid = new PIDController(kMoveP, 0, kMoveD);
+	private PIDController xPid = new PIDController(kDriveP, 0, kDriveD);
+	private PIDController yPid = new PIDController(kStrafeP, 0, kStrafeD);
 
 	private final SysIdRoutine sysidRoutine = new SysIdRoutine(
 		new SysIdRoutine.Config(null, null, Seconds.of(3), null),
@@ -116,7 +115,9 @@ public class Drivetrain extends SubsystemBase {
 	);
 
 	public Drivetrain() {
-		yawPid.setSetpoint(0.0);
+		xPid.setTolerance(0.06);
+		yPid.setTolerance(0.01);
+		yawPid.setTolerance(0.01);
 	}
 
 	@Override
@@ -124,41 +125,47 @@ public class Drivetrain extends SubsystemBase {
 		Logger.recordOutput("Drivetrain/wheelPositions", getWheelPositions());
 	}
 
-	public Command aimAtTag() {
+	public Command autoAlign() {
 		return Commands.sequence(
 			Commands.runOnce(() -> {
-				Pose pose = Pose.getInstance();
 				// https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025FieldDrawings.pdf
 				// page 162
 				// The offset from the tag center to the end of the reef post is
 				// 6.47" left or right and 1.62" into the reef
-				double angleToLeftReef = Math.atan2(
-					pose.getTagY().plus(Inches.of(-6.47)).in(Meters),
-					pose.getTagX().plus(Inches.of(-1.62)).in(Meters));
-				double angleToRightReef = Math.atan2(
-					pose.getTagY().plus(Inches.of(6.47)).in(Meters),
-					pose.getTagX().plus(Inches.of(-1.62)).in(Meters));
+				// first, figure out which tag we are currently closer to
+				Pose pose = Pose.getInstance();
+				yawPid.setSetpoint(0);
+				// choose the side of the reef we are closest to with the sign of our current y value
+				yPid.setSetpoint(Inches.of(7.47).in(Meters));
+					//* Math.signum(pose.getTagY().in(Meters)));
+				// L4 distance from the reef
+				xPid.setSetpoint(.625);
 
-				// angle at whichever one we are currently closer to being pointed at
-				yawPid.setSetpoint(Math.abs(pose.getYaw() - angleToLeftReef) < Math.abs(pose.getYaw() - angleToRightReef)
-					? angleToLeftReef : angleToRightReef);
+				xPid.reset();
+				yPid.reset();
+				yawPid.reset();
 
 				Logger.recordOutput("Drivetrain/Yaw setpoint", yawPid.getSetpoint());
+				Logger.recordOutput("Drivetrain/X setpoint", xPid.getSetpoint());
+				Logger.recordOutput("Drivetrain/Y setpoint", yPid.getSetpoint());
 			}),
 			Commands.runEnd(() -> {
-				if (Pose.getInstance().getRobotToTag() == null) {
-					setDriveVelocity(0, 0, 0);
-					return;
-				};
-				setDriveVelocity(0, 0, -yawPid.calculate(Pose.getInstance().getYaw()));
-			}, () -> setDriveVelocity(0, 0, 0), this) // when we are done stop
+				Pose pose = Pose.getInstance();
+				double xWishVel = xPid.calculate(pose.getTagX().in(Meters));
+				double yWishVel = yPid.calculate(pose.getTagY().in(Meters));
+				double yawWishVel = yawPid.calculate(pose.getYaw());
+				Logger.recordOutput("Drivetrain/X wishvel", xWishVel);
+				Logger.recordOutput("Drivetrain/Y wishvel", yWishVel);
+				Logger.recordOutput("Drivetrain/yaw wishvel", yawWishVel);
+				setDriveVelocity(-xWishVel, yWishVel, -yawWishVel, pose.getYaw());
+			}, () -> setDriveVelocity(0, 0, 0, 0), this)
+			.until(() -> (yawPid.atSetpoint() && xPid.atSetpoint() && yPid.atSetpoint()) || Pose.getInstance().getStaleTimeMs() > 400 )
 		);
-		//.until(() -> yawPid.atSetpoint());
 	}
 
-	public void setDriveVelocity(double xSpeed, double ySpeed, double zRotate) {
+	public void setDriveVelocity(double xSpeed, double ySpeed, double zRotate, double angle) {
 		MecanumDrive.WheelSpeeds ws =
-			MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate);
+			MecanumDrive.driveCartesianIK(xSpeed, ySpeed, zRotate, Rotation2d.fromRadians(angle));
 		motorLf.setVelocity(-ws.frontLeft);
 		motorLb.setVelocity(-ws.rearLeft);
 		motorRf.setVelocity(ws.frontRight);
@@ -222,10 +229,8 @@ public class Drivetrain extends SubsystemBase {
 			ySpeed *= kMaxDriveSpeed * driveScale;
 			zRotate *= kMaxTurnSpeed * turnScale;
 
-			// we are omitting the gyro angle here because field relative
-			// control on mecanum frankly is horrible
 			if (driveScale < 1) {
-				setDriveVelocity(xSpeed, ySpeed, zRotate);
+				setDriveVelocity(xSpeed, ySpeed, zRotate, 0);
 			} else {
 				setDriveVoltage(xSpeed, ySpeed, zRotate);
 			}
