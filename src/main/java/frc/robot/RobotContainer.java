@@ -47,7 +47,7 @@ public class RobotContainer {
 			coral.spit().withTimeout(1),
 			elevator.setLevel(0)
 		),
-		"2 sec drive right stalk",
+		"1.3 sec drive right stalk",
 		Commands.sequence(
 			elevator.setLevel(0),
 			Commands.runEnd(
@@ -57,7 +57,7 @@ public class RobotContainer {
 					drivetrain.setDriveVelocity(0.001, 0, 0, 0);
 				},
 				() -> drivetrain.setDriveVelocity(0, 0, 0, 0)
-			).withTimeout(2),
+			).withTimeout(1.3),
 			drivetrain.autoAlign(),
 			elevator.setLevel(3),
 			Commands.waitSeconds(2),

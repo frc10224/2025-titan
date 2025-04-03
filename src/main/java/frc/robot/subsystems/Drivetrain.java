@@ -116,7 +116,7 @@ public class Drivetrain extends SubsystemBase {
 
 	public Drivetrain() {
 		xPid.setTolerance(0.06);
-		yPid.setTolerance(0.01);
+		yPid.setTolerance(0.03);
 		yawPid.setTolerance(0.01);
 	}
 
