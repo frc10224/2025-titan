@@ -34,12 +34,22 @@ public final class Constants {
 		public static final Translation2d kFrontRightLocation = new Translation2d(Inches.of(14), Inches.of(-10.5));
 		public static final Translation2d kBackLeftLocation = new Translation2d(Inches.of(-14), Inches.of(10.5));
 		public static final Translation2d kBackRightLocation = new Translation2d(Inches.of(-14), Inches.of(-10.5));
-		public static final double kYawP = 0.003;
+		public static final double kYawP = 0.005;
 		public static final double kYawD = 0.0001;
-		public static final double kDriveP = 0.0023;
+		public static final double kDriveP = 0.0027;
 		public static final double kDriveD = 0.001;
-		public static final double kStrafeP = 0.004;
+		public static final double kStrafeP = 0.005;
 		public static final double kStrafeD = 0.001;
+		// extra coral pose measurements
+		public static final double kCoralLeftOffset = -7.47;
+		public static final double kCoralRightOffset = 10.86;	
+		public static final double kLevel1BackOffset = 0.617;
+		public static final double kLevel2BackOffset = 0.617;
+		public static final double kLevel3BackOffset = 0.617;
+		public static final double kLevel4BackOffset = 0.617;
+		// extra algae pose measurements
+		public static final double kAlgaeCenterOffset = 0;
+		public static final double kAlgaeBackOffset = 0.6;
 	};
 
 	public static final class PoseConstants {
@@ -67,9 +77,9 @@ public final class Constants {
 		public static final int kEncoderChA = 8;
 		public static final int kEncoderChB = 9;
 		public static final double kGearboxRatio = 1./20.;
-		public static final double[] kElevatorLevels = { 0, 0.5, 1.82, 4.4 };
+		public static final double[] kElevatorLevels = { 0.03, 0.5, 1.82, 4.4 };
 		public static final double kAlgaeHeight2 = 3.5;
-		public static final double kAlgaeHeight1 = 2.2;
+		public static final double kAlgaeHeight1 = 1.9;
 	}
 
 	public static final class CoralConstants {

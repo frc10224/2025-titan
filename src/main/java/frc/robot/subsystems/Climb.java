@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.*;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -28,6 +27,9 @@ public class Climb extends SubsystemBase {
 		//servo.setBoundsMicroseconds(1520, 1520, 1520/2, 0, 0);
 		//servo.
 
+		///config.softLimit.forwardSoftLimit(kClimberUpValue);
+		//config.softLimit.forwardSoftLimitEnabled(true);
+
 		motor.configure(config,
 			ResetMode.kResetSafeParameters,
 			PersistMode.kPersistParameters);
@@ -41,6 +43,12 @@ public class Climb extends SubsystemBase {
 		);
 	}
 
+	public Command resetServoPosition() {
+		return Commands.runOnce(
+			() -> motor.getEncoder().setPosition(0),
+			this);
+	}
+
 	public Command extend() {
 		return changePosition(-1)
 			.until(() -> motor.getEncoder().getPosition() < kClimberOutValue)
@@ -48,15 +56,19 @@ public class Climb extends SubsystemBase {
 	}
 
 	public Command pull() {
-		return changePosition(1).until(() -> motor.getEncoder().getPosition() > kClimberUpValue);
+		return changePosition(1);//.until(() -> motor.getEncoder().getPosition() > kClimberUpValue);
 	}
 
 	public Command releaseTray() {
-		return Commands.runOnce(() -> servoPos = 0.4);
+		return Commands.runOnce(
+			() -> servoPos = 0.4,
+			this);
 	}
 
 	public Command returnServo() {
-		return Commands.runOnce(() -> servoPos = 1);
+		return Commands.runOnce(
+			() -> servoPos = 1,
+			this);
 	}
 
 	@Override

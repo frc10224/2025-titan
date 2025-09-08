@@ -1,13 +1,23 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.DrivetrainConstants.*;
+
 import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
+
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkRelativeEncoder;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -15,15 +25,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import edu.wpi.first.wpilibj.RobotController;
-
-import static edu.wpi.first.units.Units.*;
-
-import com.revrobotics.spark.*;
-import com.revrobotics.spark.SparkBase.*;
-import com.revrobotics.spark.config.SparkMaxConfig;
-
-import static frc.robot.Constants.DrivetrainConstants.*;
 import frc.robot.Pose;
 
 class DriveMotor {
@@ -125,7 +126,7 @@ public class Drivetrain extends SubsystemBase {
 		Logger.recordOutput("Drivetrain/wheelPositions", getWheelPositions());
 	}
 
-	public Command autoAlign() {
+	public Command autoAlign(double xOffset, double yOffset) {
 		return Commands.sequence(
 			Commands.runOnce(() -> {
 				// https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/2025FieldDrawings.pdf
@@ -133,13 +134,12 @@ public class Drivetrain extends SubsystemBase {
 				// The offset from the tag center to the end of the reef post is
 				// 6.47" left or right and 1.62" into the reef
 				// first, figure out which tag we are currently closer to
-				Pose pose = Pose.getInstance();
-				yawPid.setSetpoint(0);
+				yawPid.setSetpoint(-0.07);
 				// choose the side of the reef we are closest to with the sign of our current y value
-				yPid.setSetpoint(Inches.of(7.47).in(Meters));
+				yPid.setSetpoint(Inches.of(yOffset).in(Meters));
 					//* Math.signum(pose.getTagY().in(Meters)));
 				// L4 distance from the reef
-				xPid.setSetpoint(.625);
+				xPid.setSetpoint(xOffset);
 
 				xPid.reset();
 				yPid.reset();
@@ -154,10 +154,13 @@ public class Drivetrain extends SubsystemBase {
 				double xWishVel = xPid.calculate(pose.getTagX().in(Meters));
 				double yWishVel = yPid.calculate(pose.getTagY().in(Meters));
 				double yawWishVel = yawPid.calculate(pose.getYaw());
+
 				Logger.recordOutput("Drivetrain/X wishvel", xWishVel);
 				Logger.recordOutput("Drivetrain/Y wishvel", yWishVel);
 				Logger.recordOutput("Drivetrain/yaw wishvel", yawWishVel);
+				
 				setDriveVelocity(-xWishVel, yWishVel, -yawWishVel, pose.getYaw());
+
 			}, () -> setDriveVelocity(0, 0, 0, 0), this)
 			.until(() -> (yawPid.atSetpoint() && xPid.atSetpoint() && yPid.atSetpoint()) || Pose.getInstance().getStaleTimeMs() > 400 )
 		);

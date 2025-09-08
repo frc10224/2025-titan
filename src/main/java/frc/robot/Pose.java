@@ -1,5 +1,8 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meters;
+import static frc.robot.Constants.PoseConstants.kFrontCameraLocation;
+
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -8,11 +11,6 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.Distance;
-
-import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.PoseConstants.*;
-
-import java.util.Timer;
 
 // this may not be a "subsystem" but it does contain a lot of things that
 // should be self contained
@@ -72,10 +70,10 @@ public final class Pose {
             for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
                 if (!result.hasTargets()) continue;
                 for (PhotonTrackedTarget target : result.targets) {
-                    double l = translationLength(target.getBestCameraToTarget());
-                    if (l < tagDist) {
+                    double len = translationLength(target.getBestCameraToTarget());
+                    if (len < tagDist) {
                         finalTarget = target;
-                        tagDist = l;
+                        tagDist = len;
                     }
                 }
             }

@@ -13,12 +13,16 @@ import java.util.Map;
 
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants.ElevatorConstants;
-import frc.robot.subsystems.*;
+import static frc.robot.Constants.DrivetrainConstants.*;
+import static frc.robot.Constants.ElevatorConstants.*;
+import frc.robot.subsystems.Algae;
+import frc.robot.subsystems.Climb;
+import frc.robot.subsystems.Coral;
+import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Elevator;
 
 public class RobotContainer {
 	public final Drivetrain drivetrain = new Drivetrain();
@@ -41,11 +45,13 @@ public class RobotContainer {
 				},
 				() -> drivetrain.setDriveVelocity(0, 0, 0, 0)
 			).withTimeout(0.7),
-			drivetrain.autoAlign(),
+			drivetrain.autoAlign(kLevel4BackOffset,
+				kCoralRightOffset),
 			elevator.setLevel(3),
 			Commands.waitSeconds(2),
 			coral.spit().withTimeout(1),
-			elevator.setLevel(0)
+			elevator.setPosition(kAlgaeHeight1),
+			Commands.waitSeconds(2)
 		),
 		"1.3 sec drive right stalk",
 		Commands.sequence(
@@ -58,11 +64,15 @@ public class RobotContainer {
 				},
 				() -> drivetrain.setDriveVelocity(0, 0, 0, 0)
 			).withTimeout(1.3),
-			drivetrain.autoAlign(),
+			drivetrain.autoAlign(kLevel4BackOffset,
+				kCoralRightOffset),
 			elevator.setLevel(3),
 			Commands.waitSeconds(2),
 			coral.spit().withTimeout(1),
-			elevator.setLevel(0)
+			elevator.setPosition(kAlgaeHeight2),
+			drivetrain.autoAlign(kAlgaeBackOffset,
+				0),
+			coral.collect().withTimeout(1)
 		)
 	);
 
@@ -77,8 +87,8 @@ public class RobotContainer {
 
 		operator.povLeft().whileTrue(algae.collect());
 		operator.povRight().whileTrue(algae.spit());
-		operator.povDown().onTrue(elevator.setPosition(ElevatorConstants.kAlgaeHeight1));
-		operator.povUp().onTrue(elevator.setPosition(ElevatorConstants.kAlgaeHeight2));
+		operator.povDown().onTrue(elevator.setPosition(kAlgaeHeight1));
+		operator.povUp().onTrue(elevator.setPosition(kAlgaeHeight2));
 
 		operator.a().whileTrue(coral.collect());
 		operator.b().whileTrue(coral.spit());
@@ -95,10 +105,11 @@ public class RobotContainer {
 		driver.rightTrigger().onFalse(drivetrain.setSpeedScale(1, 1));
 		driver.leftTrigger().onTrue(drivetrain.setSpeedScale(kUpperDriveScale, kUpperTurnScale));
 		driver.leftTrigger().onFalse(drivetrain.setSpeedScale(1, 1));
-		driver.rightBumper().whileTrue(drivetrain.autoAlign());
+		driver.rightBumper().whileTrue(drivetrain.autoAlign(kLevel4BackOffset,
+			kCoralRightOffset));
 
 		//driver.a().onTrue(climb.changePosition());
-		driver.x().whileTrue(climb.changePosition(1));
+		driver.x().whileTrue(climb.pull());
 		driver.y().whileTrue(climb.changePosition(-1));
 		//driver.povLeft().onTrue(climb.releaseTray());
 		driver.povRight().onTrue(climb.returnServo());
