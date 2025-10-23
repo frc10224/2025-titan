@@ -77,7 +77,7 @@ public final class Constants {
 		public static final int kEncoderChA = 8;
 		public static final int kEncoderChB = 9;
 		public static final double kGearboxRatio = 1./20.;
-		public static final double[] kElevatorLevels = { 0.03, 0.5, 1.82, 4.4 };
+		public static final double[] kElevatorLevels = { 0, 0.5, 1.82, 4.4 };
 		public static final double kAlgaeHeight2 = 3.5;
 		public static final double kAlgaeHeight1 = 1.9;
 	}
@@ -102,8 +102,23 @@ public final class Constants {
 		public static final double kHoldPosition = 6;
 		public static final double kSpinPercentage = 1;
 		public static final int kRampMotorId = 21;
-		public static final double kClimberOutValue = -266;
+		public static final double kClimberOutValue = -250;
 		public static final double kClimberUpValue = 160;
+	}
+
+	public static final class RampConstants {
+		public static final int kPulleyMotorId = 14;
+
+		public static final double kP = 0.15;
+		public static final double kI = 0.001;
+		public static final double kD = 0.05;
+
+		public static final double kLiftPosition = 0.79;
+		public static final double kDropPosition = -1.6;
+		public static final double kDefaultPosition = 0.05;
+
+		public static final double kMinOutput = 0;
+		public static final double kMaxOutput = 0.5;
 	}
 }
 

@@ -4,10 +4,8 @@
 
 package frc.robot;
 
-import static frc.robot.Constants.DrivetrainConstants.kLowerDriveScale;
-import static frc.robot.Constants.DrivetrainConstants.kLowerTurnScale;
-import static frc.robot.Constants.DrivetrainConstants.kUpperDriveScale;
-import static frc.robot.Constants.DrivetrainConstants.kUpperTurnScale;
+import static frc.robot.Constants.DrivetrainConstants.*;
+import static frc.robot.Constants.ElevatorConstants.*;
 
 import java.util.Map;
 
@@ -16,13 +14,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import static frc.robot.Constants.DrivetrainConstants.*;
-import static frc.robot.Constants.ElevatorConstants.*;
-import frc.robot.subsystems.Algae;
-import frc.robot.subsystems.Climb;
-import frc.robot.subsystems.Coral;
-import frc.robot.subsystems.Drivetrain;
-import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.*;
 
 public class RobotContainer {
 	public final Drivetrain drivetrain = new Drivetrain();
@@ -30,6 +22,7 @@ public class RobotContainer {
 	public final Coral coral = new Coral(elevator);
 	public final Algae algae = new Algae();
 	public final Climb climb = new Climb();
+	public final Ramp ramp = new Ramp();
 
 	LoggedDashboardChooser<Command> autoPicker = new LoggedDashboardChooser<>("auto picker");
 
@@ -90,16 +83,21 @@ public class RobotContainer {
 		operator.povDown().onTrue(elevator.setPosition(kAlgaeHeight1));
 		operator.povUp().onTrue(elevator.setPosition(kAlgaeHeight2));
 
+		//operator.leftTrigger().whileTrue(coral.collect());
+		//operator.rightTrigger().whileTrue(coral.spit());
 		operator.a().whileTrue(coral.collect());
 		operator.b().whileTrue(coral.spit());
 		driver.b().whileTrue(coral.spit());
 		operator.x().whileTrue(coral.slurp());
 		operator.y().whileTrue(elevator.zero());
+		operator.a().whileTrue(ramp.lift());
 
-		operator.rightTrigger().onTrue(elevator.setLevel(0));
-		operator.rightBumper().onTrue(elevator.setLevel(1));
-		operator.leftTrigger().onTrue(elevator.setLevel(2));
-		operator.leftBumper().onTrue(elevator.setLevel(3));
+		//operator.leftBumper().onTrue(elevator.changeLevel(-1));
+		//operator.rightBumper().onTrue(elevator.changeLevel(1));
+		operator.leftTrigger().onTrue(elevator.setLevel(0));
+		operator.leftBumper().onTrue(elevator.setLevel(1));
+		operator.rightBumper().onTrue(elevator.setLevel(2));
+		operator.rightTrigger().onTrue(elevator.setLevel(3));
 
 		driver.rightTrigger().onTrue(drivetrain.setSpeedScale(kLowerDriveScale, kLowerTurnScale));
 		driver.rightTrigger().onFalse(drivetrain.setSpeedScale(1, 1));
@@ -112,8 +110,8 @@ public class RobotContainer {
 		driver.x().whileTrue(climb.pull());
 		driver.y().whileTrue(climb.changePosition(-1));
 		//driver.povLeft().onTrue(climb.releaseTray());
-		driver.povRight().onTrue(climb.returnServo());
-		driver.povUp().onTrue(climb.extend());
+		//driver.povRight().onTrue(climb.returnServo());
+		driver.povUp().onTrue(climb.extend(ramp.drop()));
 		//driver.povDown().whileTrue(climb.pull());
 	}
 

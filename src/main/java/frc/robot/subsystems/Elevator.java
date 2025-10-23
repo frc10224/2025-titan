@@ -42,6 +42,7 @@ public class Elevator extends SubsystemBase {
 
 	public boolean isLocked = false;
 	public boolean doClosedLoop = true;
+	public double currentLevel = 0;
 
 	private SysIdRoutine sysidRoutine = new SysIdRoutine(
 			new SysIdRoutine.Config(Volts.of(2).per(Second), Volts.of(7), null, null),
@@ -98,6 +99,8 @@ public class Elevator extends SubsystemBase {
 		Logger.recordOutput("Elevator/RightCurrent", rightMotor.getOutputCurrent());
 		Logger.recordOutput("Elevator/Setpoint", setpoint.position);
 		Logger.recordOutput("Elevator/IsLocked", isLocked);
+		Logger.recordOutput("Elevator/CurrentLevel", currentLevel);
+
 		// zero the neo encoder with the bore encoder, seems to help fix
 		// weird drift issues
 		// HACKHACK!
@@ -118,6 +121,20 @@ public class Elevator extends SubsystemBase {
 	public Command setPosition(double turns) {
 		return Commands.runOnce(() -> {
 				if (isLocked) return;
+				/*for (int i = 0; i < kElevatorLevels.length; i++) {
+					double pos = kElevatorLevels[i];
+					if (turns == pos) {
+						currentLevel = i;
+					
+						break;
+					}
+				}
+				if (turns == kAlgaeHeight1) {
+					currentLevel = 1.5;
+				}
+				if (turns == kAlgaeHeight2) {
+					currentLevel = 2.5;
+				}*/
 				goal.position = turns;
 				goal.velocity = 0;
 			}, this);
@@ -151,8 +168,11 @@ public class Elevator extends SubsystemBase {
 		return setPosition(kElevatorLevels[level]);
 	}
 
-	public double setpoint() {
-		return goal.position;
+	public Command changeLevel(int direction) {
+		return Commands.runOnce(() -> {
+			int shiftedLevel = (int) Math.round(currentLevel + (direction * 0.75));
+			setLevel(shiftedLevel);
+		}, this);
 	}
 
 	public Command sysIdDynamic(SysIdRoutine.Direction direction) {

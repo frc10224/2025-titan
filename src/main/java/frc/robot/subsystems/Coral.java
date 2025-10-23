@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants.ElevatorConstants;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.*;
@@ -115,7 +114,7 @@ public class Coral extends SubsystemBase {
 	public Command spit() {
 		return Commands.runEnd(
 			() -> {
-				if (elevator.setpoint() != ElevatorConstants.kElevatorLevels[3])
+				if (elevator.currentLevel != 3)
 					leftMotor.set(0.1);
 				else
 					leftMotor.set(0.05);

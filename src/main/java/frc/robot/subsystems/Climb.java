@@ -10,15 +10,15 @@ import static frc.robot.Constants.ClimbConstants.*;
 
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.wpilibj.Servo;
+//import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climb extends SubsystemBase {
 	private SparkMax motor = new SparkMax(kWinchMotorId, MotorType.kBrushless);;
-	private Servo servo = new Servo(0);
-	private double servoPos = 1;
+	//private Servo servo = new Servo(0);
+	//private double servoPos = 1;
 
 	public Climb() {
 		SparkMaxConfig config = new SparkMaxConfig();
@@ -49,16 +49,17 @@ public class Climb extends SubsystemBase {
 			this);
 	}
 
-	public Command extend() {
+	public Command extend(Command drop) {
 		return changePosition(-1)
 			.until(() -> motor.getEncoder().getPosition() < kClimberOutValue)
-			.andThen(this.releaseTray());
+			.andThen(drop);
 	}
 
 	public Command pull() {
 		return changePosition(1);//.until(() -> motor.getEncoder().getPosition() > kClimberUpValue);
 	}
 
+	/*
 	public Command releaseTray() {
 		return Commands.runOnce(
 			() -> servoPos = 0.4,
@@ -70,12 +71,13 @@ public class Climb extends SubsystemBase {
 			() -> servoPos = 1,
 			this);
 	}
+	*/
 
 	@Override
 	public void periodic() {
-		servo.setPosition(servoPos);
+		//servo.setPosition(servoPos);
 		//servo.setPulseTimeMicroseconds(1520);
-		Logger.recordOutput("Climber/servo", servo.getPosition());
+		//Logger.recordOutput("Climber/servo", servo.getPosition());
 		Logger.recordOutput("Climber/motorPos", motor.getEncoder().getPosition());
 	}
 }
