@@ -4,13 +4,24 @@
 
 package frc.robot.subsystems;
 
-import static frc.robot.Constants.RampConstants.*;
+import static frc.robot.Constants.RampConstants.kD;
+import static frc.robot.Constants.RampConstants.kDefaultPosition;
+import static frc.robot.Constants.RampConstants.kDropPosition;
+import static frc.robot.Constants.RampConstants.kI;
+import static frc.robot.Constants.RampConstants.kLiftPosition;
+import static frc.robot.Constants.RampConstants.kMaxOutput;
+import static frc.robot.Constants.RampConstants.kMinOutput;
+import static frc.robot.Constants.RampConstants.kP;
+import static frc.robot.Constants.RampConstants.kPulleyMotorId;
 
+import org.littletonrobotics.junction.Logger;
+
+import com.revrobotics.REVLibError;
+import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -30,21 +41,32 @@ public class Ramp extends SubsystemBase {
     config.closedLoop.minOutput(kMinOutput);
     config.closedLoop.maxOutput(kMaxOutput);
 
-    motor.getEncoder().setPosition(0);
-    motor.configure(config,
+    var error = motor.getEncoder().setPosition(0);
+    if (!REVLibError.kOk.equals(error)) {
+      System.out.format("ERROR setting inital ramp motor position: $s", error);
+    }
+    error = motor.configure(config,
       ResetMode.kResetSafeParameters,
       PersistMode.kPersistParameters
     );
+    if (!REVLibError.kOk.equals(error)) {
+      System.out.format("ERROR configuring ramp motor: $s", error);
+    }
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    Logger.recordOutput("Coral/motorAbsoluteEncoderPosition", motor.getAbsoluteEncoder().getPosition());
+    Logger.recordOutput("Coral/motorAbsoluteEncoderVelocity", motor.getAbsoluteEncoder().getVelocity());
+    Logger.recordOutput("Coral/motorAppledOutput", motor.getAppliedOutput());
+    Logger.recordOutput("Coral/motorOutputCurrent", motor.getOutputCurrent());
   }
 
-  public void setPosition(double rotations) {
-    System.out.println("posistion = " + rotations);
-    motor.getClosedLoopController().setReference(rotations, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+  public void setPosition(double position) {
+    var error = motor.getClosedLoopController().setReference(position, ControlType.kPosition, ClosedLoopSlot.kSlot0);
+    if (!REVLibError.kOk.equals(error)) {
+      System.out.format("ERROR setting ramp motor position to %f: $s", position, error);
+    }
   }
 
   public Command lift() {
